@@ -1,0 +1,32 @@
+type Post {
+    id: ID!
+    title: String!
+    description: String!
+    comments: [Comment]!
+    author: User!
+    commentsAllowed: Boolean!
+}
+
+type PostPayload {
+    posts: [Post]
+}
+
+input PostsFilter {
+    postID: ID
+    authorID: ID
+    withComments: Boolean
+}
+
+extend type Query {
+    posts(filter: PostsFilter): PostPayload
+}
+
+input NewPost {
+    title: String!
+    description: String!
+    authorID: String!
+}
+
+extend type Mutation {
+    createPost(input: NewPost!): Post!
+}
