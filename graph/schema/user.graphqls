@@ -1,0 +1,29 @@
+type User {
+    id: ID!
+    username: String!
+    email: String!
+    posts: [Post]!
+}
+
+type UserPayload {
+    users: [User]
+}
+
+input UsersFilter {
+    userID: ID
+}
+
+type Query {
+    users(filter: UsersFilter): UserPayload
+}
+
+input CreateUserInput {
+    username: String!
+    email: String!
+}
+
+type 
+
+type Mutation {
+    createUser(input: CreateUserInput!):
+}

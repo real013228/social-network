@@ -1,0 +1,30 @@
+type Comment {
+    id: ID!
+    text: String!
+    post: Post!
+    author: User!
+}
+
+type CommentPayload {
+    comments: [Comment]
+}
+
+input CommentsFilter {
+    commentID: ID
+    postID: ID
+    authorID: ID
+}
+
+extend type Query {
+    comments(filter: CommentsFilter): CommentPayload
+}
+
+input NewComment {
+    text: String!
+    postID: String!
+    authorID: String!
+}
+
+extend type Mutation {
+    createComment(input: NewComment!): Comment!
+}
