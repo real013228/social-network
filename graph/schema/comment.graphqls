@@ -19,12 +19,16 @@ extend type Query {
     comments(filter: CommentsFilter): CommentPayload
 }
 
-input NewComment {
+input CreateCommentInput {
     text: String!
     postID: String!
     authorID: String!
 }
 
+type CreateCommentPayload {
+    comment: Comment!
+}
+
 extend type Mutation {
-    createComment(input: NewComment!): Comment!
+    createComment(input: CreateCommentInput!): CreateCommentPayload!
 }

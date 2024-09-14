@@ -21,12 +21,16 @@ extend type Query {
     posts(filter: PostsFilter): PostPayload
 }
 
-input NewPost {
+input CreatePostInput {
     title: String!
     description: String!
     authorID: String!
 }
 
+type CreatePostPayload {
+    post: Post!
+}
+
 extend type Mutation {
-    createPost(input: NewPost!): Post!
+    createPost(input: CreatePostInput!): CreatePostPayload
 }
