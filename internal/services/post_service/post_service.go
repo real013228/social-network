@@ -1,10 +1,16 @@
 package post_service
 
-import "github.com/real013228/social-network/internal/model"
+import (
+	"context"
+	"github.com/real013228/social-network/internal/model"
+)
 
 type postStorage interface {
-	CreatePost(post model.Post) error
-	GetPosts(filter model.PostsFilter) ([]model.Post, error)
+	CreatePost(ctx context.Context, post model.CreatePostInput) (string, error)
+	GetPosts(ctx context.Context) ([]model.Post, error)
+	GetPostsByUserID(ctx context.Context, userID string) ([]model.Post, error)
+	GetPostByID(ctx context.Context, postID string) (model.Post, error)
+	GetPostWithAllowedComments(ctx context.Context) ([]model.Post, error)
 }
 
 type PostService struct {
