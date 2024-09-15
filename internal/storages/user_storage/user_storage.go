@@ -73,9 +73,6 @@ func (s UserStoragePostgres) GetUserByEmail(ctx context.Context, email string) (
 	`
 	var user model.User
 	if err := s.client.QueryRow(ctx, q, email).Scan(&user.ID, &user.Username, &user.Email); err != nil {
-		return model.User{}, err
-	}
-	if user.Email == "" {
 		return model.User{}, ErrUserNotFound
 	}
 

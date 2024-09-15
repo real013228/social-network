@@ -7,9 +7,9 @@ package resolvers
 import (
 	"context"
 	"fmt"
-	"github.com/real013228/social-network/internal/model"
 
 	"github.com/real013228/social-network/graph"
+	"github.com/real013228/social-network/internal/model"
 )
 
 // CreatePost is the resolver for the createPost field.

@@ -13,7 +13,7 @@ var (
 )
 
 type userStorage interface {
-	CreateUser(ctx context.Context, user model.CreateUserInput) error
+	CreateUser(ctx context.Context, user model.CreateUserInput) (string, error)
 	GetUsers(ctx context.Context) ([]model.User, error)
 	GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error)
 	GetUserByEmail(ctx context.Context, email string) (model.User, error)
@@ -23,22 +23,22 @@ type UserService struct {
 	storage userStorage
 }
 
-func (s UserService) CreateUser(ctx context.Context, user model.CreateUserInput) error {
+func (s UserService) CreateUser(ctx context.Context, user model.CreateUserInput) (string, error) {
 	storedUser, err := s.storage.GetUserByEmail(ctx, user.Email)
 	if err != nil {
 		if !errors.Is(err, user_storage.ErrUserNotFound) {
-			return fmt.Errorf("user_storage.GetUserByEmail email=%s: %w", user.Email, err)
+			return "", fmt.Errorf("user_storage.GetUserByEmail email=%s: %w", user.Email, err)
 		}
 	}
 	if storedUser.Email == user.Email {
-		return ErrUserExists
+		return "", ErrUserExists
 	}
 
-	err = s.storage.CreateUser(ctx, user)
+	email, err := s.storage.CreateUser(ctx, user)
 	if err != nil {
-		return fmt.Errorf("user_storage.CreateUser email:%s %w", user.Email, err)
+		return "", fmt.Errorf("user_storage.CreateUser email:%s %w", user.Email, err)
 	}
-	return nil
+	return email, nil
 }
 
 func (s UserService) GetUsers(ctx context.Context) ([]model.User, error) {

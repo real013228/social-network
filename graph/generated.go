@@ -39,6 +39,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Comment() CommentResolver
+	CreateUserPayload() CreateUserPayloadResolver
 	Mutation() MutationResolver
 	Post() PostResolver
 	Query() QueryResolver
@@ -69,7 +70,7 @@ type ComplexityRoot struct {
 	}
 
 	CreateUserPayload struct {
-		User func(childComplexity int) int
+		UserID func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -112,6 +113,9 @@ type ComplexityRoot struct {
 type CommentResolver interface {
 	Post(ctx context.Context, obj *model.Comment) (*model.Post, error)
 	Author(ctx context.Context, obj *model.Comment) (*model.User, error)
+}
+type CreateUserPayloadResolver interface {
+	UserID(ctx context.Context, obj *model.CreateUserPayload) (string, error)
 }
 type MutationResolver interface {
 	CreateUser(ctx context.Context, input model.CreateUserInput) (*model.CreateUserPayload, error)
@@ -199,12 +203,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CreatePostPayload.Post(childComplexity), true
 
-	case "CreateUserPayload.user":
-		if e.complexity.CreateUserPayload.User == nil {
+	case "CreateUserPayload.userId":
+		if e.complexity.CreateUserPayload.UserID == nil {
 			break
 		}
 
-		return e.complexity.CreateUserPayload.User(childComplexity), true
+		return e.complexity.CreateUserPayload.UserID(childComplexity), true
 
 	case "Mutation.createComment":
 		if e.complexity.Mutation.CreateComment == nil {
@@ -569,7 +573,7 @@ input CreateUserInput {
 }
 
 type CreateUserPayload {
-    user: User!
+    userId: String!
 }
 
 type Mutation {
@@ -1241,8 +1245,8 @@ func (ec *executionContext) fieldContext_CreatePostPayload_post(_ context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _CreateUserPayload_user(ctx context.Context, field graphql.CollectedField, obj *model.CreateUserPayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CreateUserPayload_user(ctx, field)
+func (ec *executionContext) _CreateUserPayload_userId(ctx context.Context, field graphql.CollectedField, obj *model.CreateUserPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateUserPayload_userId(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1255,7 +1259,7 @@ func (ec *executionContext) _CreateUserPayload_user(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.User, nil
+		return ec.resolvers.CreateUserPayload().UserID(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1267,29 +1271,19 @@ func (ec *executionContext) _CreateUserPayload_user(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_CreateUserPayload_user(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CreateUserPayload_userId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "CreateUserPayload",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_User_id(ctx, field)
-			case "username":
-				return ec.fieldContext_User_username(ctx, field)
-			case "email":
-				return ec.fieldContext_User_email(ctx, field)
-			case "posts":
-				return ec.fieldContext_User_posts(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1331,8 +1325,8 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "user":
-				return ec.fieldContext_CreateUserPayload_user(ctx, field)
+			case "userId":
+				return ec.fieldContext_CreateUserPayload_userId(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type CreateUserPayload", field.Name)
 		},
@@ -4668,7 +4662,7 @@ func (ec *executionContext) _CreateUserPayload(ctx context.Context, sel ast.Sele
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("CreateUserPayload")
-		case "user":
+		case "userId":
 			field := field
 
 			if field.Deferrable != nil {
@@ -4682,14 +4676,14 @@ func (ec *executionContext) _CreateUserPayload(ctx context.Context, sel ast.Sele
 					deferred[field.Deferrable.Label] = dfs
 				}
 				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return ec._CreateUserPayload_user(ctx, field, obj)
+					return ec._CreateUserPayload_userId(ctx, field, obj)
 				})
 
 				// don't run the out.Concurrently() call below
 				out.Values[i] = graphql.Null
 				continue
 			}
-			out.Values[i] = ec._CreateUserPayload_user(ctx, field, obj)
+			out.Values[i] = ec._CreateUserPayload_userId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

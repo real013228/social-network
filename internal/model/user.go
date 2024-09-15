@@ -6,7 +6,7 @@ type CreateUserInput struct {
 }
 
 type CreateUserPayload struct {
-	User *User `json:"user"`
+	User string `json:"user"`
 }
 
 type Mutation struct {
