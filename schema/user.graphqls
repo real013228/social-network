@@ -23,7 +23,7 @@ input CreateUserInput {
 }
 
 type CreateUserPayload {
-    user: User!
+    userId: String!
 }
 
 type Mutation {

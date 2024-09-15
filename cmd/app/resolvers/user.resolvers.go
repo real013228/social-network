@@ -14,7 +14,8 @@ import (
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*model.CreateUserPayload, error) {
-	panic(fmt.Errorf("not implemented: CreateUser - createUser"))
+	user, err := r.userService.CreateUser(ctx, input)
+	return
 }
 
 // Users is the resolver for the users field.
