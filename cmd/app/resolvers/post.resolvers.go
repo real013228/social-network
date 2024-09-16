@@ -6,40 +6,58 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/real013228/social-network/graph"
 	"github.com/real013228/social-network/internal/model"
 )
 
 // CreatePost is the resolver for the createPost field.
 func (r *mutationResolver) CreatePost(ctx context.Context, input model.CreatePostInput) (*model.CreatePostPayload, error) {
-	panic(fmt.Errorf("not implemented: CreatePost - createPost"))
+	var createPostPayload model.CreatePostPayload
+	postId, err := r.postService.CreatePost(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+	posts, err := r.postService.GetPostsByFilter(ctx, model.PostsFilter{PostID: &postId})
+	if err != nil || len(posts) < 1 {
+		return nil, err
+	}
+	createPostPayload.Post = &posts[0]
+	return &createPostPayload, nil
 }
 
 // Comments is the resolver for the comments field.
 func (r *postResolver) Comments(ctx context.Context, obj *model.Post) ([]*model.Comment, error) {
-	panic(fmt.Errorf("not implemented: Comments - comments"))
+	comms, err := r.commentService.GetCommentsByPostID(ctx, obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var res []*model.Comment
+	for _, comm := range comms {
+		comm := comm
+		res = append(res, &comm)
+	}
+	return res, nil
 }
 
 // Posts is the resolver for the posts field.
 func (r *queryResolver) Posts(ctx context.Context, filter *model.PostsFilter) (*model.PostPayload, error) {
-	panic(fmt.Errorf("not implemented: Posts - posts"))
+	posts, err := r.postService.GetPostsByFilter(ctx, *filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var res []*model.Post
+	for _, post := range posts {
+		post := post
+		res = append(res, &post)
+	}
+	var payload *model.PostPayload
+	payload.Posts = res
+	return payload, nil
 }
 
 // Post returns graph.PostResolver implementation.
 func (r *Resolver) Post() graph.PostResolver { return &postResolver{r} }
 
 type postResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *postResolver) Author(ctx context.Context, obj *model.Post) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: Author - author"))
-}
-*/

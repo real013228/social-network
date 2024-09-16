@@ -112,6 +112,7 @@ type ComplexityRoot struct {
 
 type CommentResolver interface {
 	Post(ctx context.Context, obj *model.Comment) (*model.Post, error)
+	Author(ctx context.Context, obj *model.Comment) (*model.User, error)
 }
 type CreateUserPayloadResolver interface {
 	UserID(ctx context.Context, obj *model.CreateUserPayload) (string, error)
@@ -1040,7 +1041,7 @@ func (ec *executionContext) _Comment_author(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Author, nil
+		return ec.resolvers.Comment().Author(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1061,8 +1062,8 @@ func (ec *executionContext) fieldContext_Comment_author(_ context.Context, field
 	fc = &graphql.FieldContext{
 		Object:     "Comment",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -6461,6 +6462,10 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNUser2githubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
