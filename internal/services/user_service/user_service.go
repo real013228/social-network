@@ -41,11 +41,11 @@ func (s UserService) CreateUser(ctx context.Context, user model.CreateUserInput)
 		Email:    user.Email,
 		Username: user.Username,
 	}
-	email, err := s.storage.CreateUser(ctx, usr)
+	id, err := s.storage.CreateUser(ctx, usr)
 	if err != nil {
 		return "", fmt.Errorf("user_storage.CreateUser email:%s %w", user.Email, err)
 	}
-	return email, nil
+	return id, nil
 }
 
 func (s UserService) GetUsers(ctx context.Context) ([]model.User, error) {

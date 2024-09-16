@@ -2,9 +2,14 @@ package post_storage
 
 import (
 	"context"
+	"errors"
 	"github.com/real013228/social-network/internal/model"
 	"github.com/real013228/social-network/internal/storages"
 	"github.com/real013228/social-network/internal/storages/user_storage"
+)
+
+var (
+	ErrPostNotFound = errors.New("post not found")
 )
 
 type PostStoragePostgres struct {
@@ -50,7 +55,7 @@ func (s PostStoragePostgres) GetPosts(ctx context.Context) ([]model.Post, error)
 
 func (s PostStoragePostgres) GetPostsByUserID(ctx context.Context, userID string) ([]model.Post, error) {
 	q := `
-		SELECT id, title, description, author_id 
+		SELECT posts.id, title, description, author_id 
 		FROM posts JOIN users ON users.id = posts.author_id
 		WHERE users.id = $1;
 	`
@@ -109,4 +114,8 @@ func (s PostStoragePostgres) GetPostWithAllowedComments(ctx context.Context) ([]
 		return nil, err
 	}
 	return posts, nil
+}
+
+func NewPostStoragePostgres(client storages.Client, userStorage user_storage.UserStoragePostgres) *PostStoragePostgres {
+	return &PostStoragePostgres{client: client, userStorage: userStorage}
 }

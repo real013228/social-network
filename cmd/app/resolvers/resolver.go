@@ -10,11 +10,13 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	userService userService
+	userService    userService
+	postService    postService
+	commentService commentService
 }
 
-func NewResolver(userService userService) *Resolver {
-	return &Resolver{userService: userService}
+func NewResolver(userService userService, postService postService, commentService commentService) *Resolver {
+	return &Resolver{userService: userService, postService: postService, commentService: commentService}
 }
 
 type userService interface {
@@ -27,4 +29,10 @@ type postService interface {
 	CreatePost(ctx context.Context, post model.CreatePostInput) (string, error)
 	GetPosts(ctx context.Context) ([]model.Post, error)
 	GetPostsByFilter(ctx context.Context, filter model.PostsFilter) ([]model.Post, error)
+}
+
+type commentService interface {
+	CreateComment(ctx context.Context, comment model.CreateCommentInput) (string, error)
+	GetCommentsByPostID(ctx context.Context, postID string) ([]model.Comment, error)
+	GetCommentsByAuthorID(ctx context.Context, authorID string) ([]model.Comment, error)
 }

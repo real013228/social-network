@@ -75,4 +75,6 @@ func (s CommentStoragePostgres) GetCommentsByUserID(ctx context.Context, userID 
 	return comments, nil
 }
 
-//todo comment service and finish user service
+func NewCommentStoragePostgres(client storages.Client) *CommentStoragePostgres {
+	return &CommentStoragePostgres{client: client}
+}

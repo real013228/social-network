@@ -21,7 +21,7 @@ type postStorage interface {
 }
 
 type userStorage interface {
-	GetUserByID(ctx context.Context, userID string) (model.User, error)
+	GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error)
 }
 
 type PostService struct {
@@ -29,9 +29,14 @@ type PostService struct {
 	userStorage userStorage
 }
 
+func NewPostService(storage postStorage, userStorage userStorage) *PostService {
+	return &PostService{storage: storage, userStorage: userStorage}
+}
+
 func (s PostService) CreatePost(ctx context.Context, post model.CreatePostInput) (string, error) {
 	newID := uuid.New()
-	_, err := s.userStorage.GetUserByID(ctx, post.AuthorID)
+	authorID := post.AuthorID
+	_, err := s.userStorage.GetUserByID(ctx, model.UsersFilter{UserID: &authorID})
 	if err != nil {
 		if !errors.Is(err, user_storage.ErrUserNotFound) {
 			return "", err
@@ -86,4 +91,6 @@ func (s PostService) GetPostsByFilter(ctx context.Context, filter model.PostsFil
 		}
 		return posts, nil
 	}
+
+	return posts, nil
 }
