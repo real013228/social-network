@@ -15,7 +15,7 @@ type UserStoragePostgres struct {
 	client storages.Client
 }
 
-func (s UserStoragePostgres) CreateUser(ctx context.Context, user model.User) (string, error) {
+func (s *UserStoragePostgres) CreateUser(ctx context.Context, user model.User) (string, error) {
 	q := `
 		INSERT INTO users (id, username, email) 
 		VALUES ($1, $2, $3)
@@ -28,7 +28,7 @@ func (s UserStoragePostgres) CreateUser(ctx context.Context, user model.User) (s
 	return userId, nil
 }
 
-func (s UserStoragePostgres) GetUsers(ctx context.Context) ([]model.User, error) {
+func (s *UserStoragePostgres) GetUsers(ctx context.Context) ([]model.User, error) {
 	q := `
 		SELECT id, username, email FROM public.users
 	`
@@ -53,7 +53,7 @@ func (s UserStoragePostgres) GetUsers(ctx context.Context) ([]model.User, error)
 	return users, nil
 }
 
-func (s UserStoragePostgres) GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error) {
+func (s *UserStoragePostgres) GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error) {
 	q := `
 		SELECT id, username, email FROM public.users
 		WHERE id = $1
@@ -66,7 +66,7 @@ func (s UserStoragePostgres) GetUserByID(ctx context.Context, filter model.Users
 	return user, nil
 }
 
-func (s UserStoragePostgres) GetUserByEmail(ctx context.Context, email string) (model.User, error) {
+func (s *UserStoragePostgres) GetUserByEmail(ctx context.Context, email string) (model.User, error) {
 	q := `
 		SELECT id, username, email FROM public.users
 		WHERE email = $1

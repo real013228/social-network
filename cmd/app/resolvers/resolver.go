@@ -21,18 +21,19 @@ func NewResolver(userService userService, postService postService, commentServic
 
 type userService interface {
 	CreateUser(ctx context.Context, user model.CreateUserInput) (string, error)
-	GetUsers(ctx context.Context) ([]model.User, error)
+	GetUsers(ctx context.Context, pageLimit, pageNumber int) ([]model.User, error)
 	GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error)
 }
 
 type postService interface {
 	CreatePost(ctx context.Context, post model.CreatePostInput) (string, error)
-	GetPosts(ctx context.Context) ([]model.Post, error)
+	GetPosts(ctx context.Context, pageLimit, pageNumber int) ([]model.Post, error)
 	GetPostsByFilter(ctx context.Context, filter model.PostsFilter) ([]model.Post, error)
 }
 
 type commentService interface {
 	CreateComment(ctx context.Context, comment model.CreateCommentInput) (string, error)
+	GetComments(ctx context.Context, filter model.CommentsFilter) ([]model.Comment, error)
 	GetCommentsByPostID(ctx context.Context, postID string) ([]model.Comment, error)
 	GetCommentsByAuthorID(ctx context.Context, authorID string) ([]model.Comment, error)
 }

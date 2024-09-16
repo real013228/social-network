@@ -30,7 +30,7 @@ func initializePostgreSQLServer(cfg storages.StorageConfig) *handler.Server {
 	userStoragePostgres := user_storage.NewUserStoragePostgres(postgreSQLClient)
 	userService := user_service.NewUserService(userStoragePostgres)
 	postStoragePostgres := post_storage.NewPostStoragePostgres(postgreSQLClient, *userStoragePostgres)
-	postService := post_service.NewPostService(postStoragePostgres, *userStoragePostgres)
+	postService := post_service.NewPostService(postStoragePostgres, userStoragePostgres)
 	commentStoragePostgres := comment_storage.NewCommentStoragePostgres(postgreSQLClient)
 	commentService := comment_service.NewCommentService(commentStoragePostgres, userStoragePostgres, postStoragePostgres)
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolvers.NewResolver(

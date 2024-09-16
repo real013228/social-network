@@ -24,7 +24,7 @@ type UserService struct {
 	storage userStorage
 }
 
-func (s UserService) CreateUser(ctx context.Context, user model.CreateUserInput) (string, error) {
+func (s *UserService) CreateUser(ctx context.Context, user model.CreateUserInput) (string, error) {
 	storedUser, err := s.storage.GetUserByEmail(ctx, user.Email)
 	if err != nil {
 		if !errors.Is(err, user_storage.ErrUserNotFound) {
@@ -48,15 +48,16 @@ func (s UserService) CreateUser(ctx context.Context, user model.CreateUserInput)
 	return id, nil
 }
 
-func (s UserService) GetUsers(ctx context.Context) ([]model.User, error) {
+func (s *UserService) GetUsers(ctx context.Context, pageLimit, pageNumber int) ([]model.User, error) {
 	users, err := s.storage.GetUsers(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("user_storage.GetUsers %w", err)
 	}
+
 	return users, nil
 }
 
-func (s UserService) GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error) {
+func (s *UserService) GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error) {
 	user, err := s.storage.GetUserByID(ctx, filter)
 	if err != nil {
 		return model.User{}, fmt.Errorf("user_storage.GetUserByID %w", err)

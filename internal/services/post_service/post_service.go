@@ -33,7 +33,7 @@ func NewPostService(storage postStorage, userStorage userStorage) *PostService {
 	return &PostService{storage: storage, userStorage: userStorage}
 }
 
-func (s PostService) CreatePost(ctx context.Context, post model.CreatePostInput) (string, error) {
+func (s *PostService) CreatePost(ctx context.Context, post model.CreatePostInput) (string, error) {
 	newID := uuid.New()
 	authorID := post.AuthorID
 	_, err := s.userStorage.GetUserByID(ctx, model.UsersFilter{UserID: &authorID})
@@ -58,7 +58,7 @@ func (s PostService) CreatePost(ctx context.Context, post model.CreatePostInput)
 	return id, nil
 }
 
-func (s PostService) GetPosts(ctx context.Context) ([]model.Post, error) {
+func (s *PostService) GetPosts(ctx context.Context) ([]model.Post, error) {
 	posts, err := s.GetPosts(ctx)
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (s PostService) GetPosts(ctx context.Context) ([]model.Post, error) {
 	return posts, nil
 }
 
-func (s PostService) GetPostsByFilter(ctx context.Context, filter model.PostsFilter) ([]model.Post, error) {
+func (s *PostService) GetPostsByFilter(ctx context.Context, filter model.PostsFilter) ([]model.Post, error) {
 	var posts []model.Post
 	if filter.PostID != nil {
 		post, err := s.storage.GetPostByID(ctx, *filter.PostID)

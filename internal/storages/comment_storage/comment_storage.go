@@ -10,7 +10,7 @@ type CommentStoragePostgres struct {
 	client storages.Client
 }
 
-func (s CommentStoragePostgres) CreateComment(ctx context.Context, input model.Comment) (string, error) {
+func (s *CommentStoragePostgres) CreateComment(ctx context.Context, input model.Comment) (string, error) {
 	q := `
 		INSERT INTO comments (id, text, post_id, author_id)
 		VALUES ($1, $2, $3, $4)
@@ -23,7 +23,7 @@ func (s CommentStoragePostgres) CreateComment(ctx context.Context, input model.C
 	return id, nil
 }
 
-func (s CommentStoragePostgres) GetCommentsByPostID(ctx context.Context, postID string) ([]model.Comment, error) {
+func (s *CommentStoragePostgres) GetCommentsByPostID(ctx context.Context, postID string) ([]model.Comment, error) {
 	q := `
 		SELECT id, text, post_id, author_id
 		FROM comments
@@ -49,7 +49,7 @@ func (s CommentStoragePostgres) GetCommentsByPostID(ctx context.Context, postID 
 	return comments, nil
 }
 
-func (s CommentStoragePostgres) GetCommentsByUserID(ctx context.Context, userID string) ([]model.Comment, error) {
+func (s *CommentStoragePostgres) GetCommentsByUserID(ctx context.Context, userID string) ([]model.Comment, error) {
 	q := `
 		SELECT id, text, post_id, author_id
 		FROM comments

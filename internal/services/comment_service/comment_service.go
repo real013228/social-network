@@ -30,7 +30,7 @@ type CommentService struct {
 	postStorage   postStorage
 }
 
-func (c CommentService) CreateComment(ctx context.Context, comment model.CreateCommentInput) (string, error) {
+func (c *CommentService) CreateComment(ctx context.Context, comment model.CreateCommentInput) (string, error) {
 	newID := uuid.New()
 	authorID := comment.AuthorID
 	_, err := c.authorStorage.GetUserByID(ctx, model.UsersFilter{UserID: &authorID})
@@ -63,7 +63,7 @@ func (c CommentService) CreateComment(ctx context.Context, comment model.CreateC
 	return id, nil
 }
 
-func (c CommentService) GetCommentsByPostID(ctx context.Context, postID string) ([]model.Comment, error) {
+func (c *CommentService) GetCommentsByPostID(ctx context.Context, postID string) ([]model.Comment, error) {
 	if _, err := c.postStorage.GetPostByID(ctx, postID); err != nil {
 		if !errors.Is(err, post_storage.ErrPostNotFound) {
 			return nil, fmt.Errorf("post_storage.GetPostByID: %w", err)
@@ -78,7 +78,7 @@ func (c CommentService) GetCommentsByPostID(ctx context.Context, postID string) 
 	return comms, nil
 }
 
-func (c CommentService) GetCommentsByAuthorID(ctx context.Context, authorID string) ([]model.Comment, error) {
+func (c *CommentService) GetCommentsByAuthorID(ctx context.Context, authorID string) ([]model.Comment, error) {
 	if _, err := c.authorStorage.GetUserByID(ctx, model.UsersFilter{UserID: &authorID}); err != nil {
 		if !errors.Is(err, user_storage.ErrUserNotFound) {
 			return nil, fmt.Errorf("user_storage.GetUserByID: %w", err)

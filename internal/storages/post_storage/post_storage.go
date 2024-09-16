@@ -17,7 +17,7 @@ type PostStoragePostgres struct {
 	userStorage user_storage.UserStoragePostgres
 }
 
-func (s PostStoragePostgres) CreatePost(ctx context.Context, post model.Post) (string, error) {
+func (s *PostStoragePostgres) CreatePost(ctx context.Context, post model.Post) (string, error) {
 	q := `
 		INSERT INTO posts (id, title, description, author_id)
 		VALUES ($1, $2, $3, $4)
@@ -30,7 +30,7 @@ func (s PostStoragePostgres) CreatePost(ctx context.Context, post model.Post) (s
 	return id, nil
 }
 
-func (s PostStoragePostgres) GetPosts(ctx context.Context) ([]model.Post, error) {
+func (s *PostStoragePostgres) GetPosts(ctx context.Context) ([]model.Post, error) {
 	q := `
 		SELECT id, title, description, author_id FROM posts;
 	`
@@ -53,7 +53,7 @@ func (s PostStoragePostgres) GetPosts(ctx context.Context) ([]model.Post, error)
 	return posts, nil
 }
 
-func (s PostStoragePostgres) GetPostsByUserID(ctx context.Context, userID string) ([]model.Post, error) {
+func (s *PostStoragePostgres) GetPostsByUserID(ctx context.Context, userID string) ([]model.Post, error) {
 	q := `
 		SELECT posts.id, title, description, author_id 
 		FROM posts JOIN users ON users.id = posts.author_id
@@ -78,7 +78,7 @@ func (s PostStoragePostgres) GetPostsByUserID(ctx context.Context, userID string
 	return posts, nil
 }
 
-func (s PostStoragePostgres) GetPostByID(ctx context.Context, postID string) (model.Post, error) {
+func (s *PostStoragePostgres) GetPostByID(ctx context.Context, postID string) (model.Post, error) {
 	q := `
 		SELECT id, title, description, author_id
 		FROM posts 
@@ -91,7 +91,7 @@ func (s PostStoragePostgres) GetPostByID(ctx context.Context, postID string) (mo
 	return post, nil
 }
 
-func (s PostStoragePostgres) GetPostWithAllowedComments(ctx context.Context) ([]model.Post, error) {
+func (s *PostStoragePostgres) GetPostWithAllowedComments(ctx context.Context) ([]model.Post, error) {
 	q := `
 		SELECT id, title, description, author_id
 		FROM posts
