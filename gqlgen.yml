@@ -1,6 +1,6 @@
 # Where are all the schema files located? globs are supported eg  src/**/*.graphqls
 schema:
-  - graph/schema/*.graphqls
+  - schema/*.graphqls
 
 # Where should the generated server code go?
 exec:
@@ -14,14 +14,14 @@ exec:
 
 # Where should any generated models go?
 model:
-  filename: graph/model/models_gen.go
+#  dir: cmd/app/model
   package: model
 
 # Where should the resolver implementations go?
 resolver:
   layout: follow-schema
-  dir: graph
-  package: graph
+  dir: cmd/app/resolvers
+  package: resolvers
   filename_template: "{name}.resolvers.go"
   # Optional: turn on to not generate template comments above resolvers
   # omit_template_comment: false
@@ -66,7 +66,7 @@ resolver:
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
-#  - "github.com/real013228/social-network/graph/model"
+  - "github.com/real013228/social-network/internal/model"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -85,3 +85,18 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  User:
+#    model: github.com/real013228/social-network/cmd/app/model/model.User
+    fields:
+      posts:
+        resolver: true
+  Post:
+#    model: github.com/real013228/social-network/cmd/app/model/model.Post
+    fields:
+      comments:
+        resolver: true
+  Comment:
+#    model: github.com/real013228/social-network/cmd/app/model/model.Comment
+    fields:
+      post:
+        resolver: true
