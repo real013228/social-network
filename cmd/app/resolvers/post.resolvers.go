@@ -22,11 +22,6 @@ func (r *postResolver) Comments(ctx context.Context, obj *model.Post) ([]*model.
 	panic(fmt.Errorf("not implemented: Comments - comments"))
 }
 
-// Author is the resolver for the author field.
-func (r *postResolver) Author(ctx context.Context, obj *model.Post) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: Author - author"))
-}
-
 // Posts is the resolver for the posts field.
 func (r *queryResolver) Posts(ctx context.Context, filter *model.PostsFilter) (*model.PostPayload, error) {
 	panic(fmt.Errorf("not implemented: Posts - posts"))
@@ -36,3 +31,15 @@ func (r *queryResolver) Posts(ctx context.Context, filter *model.PostsFilter) (*
 func (r *Resolver) Post() graph.PostResolver { return &postResolver{r} }
 
 type postResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *postResolver) Author(ctx context.Context, obj *model.Post) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: Author - author"))
+}
+*/

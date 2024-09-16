@@ -17,11 +17,6 @@ func (r *commentResolver) Post(ctx context.Context, obj *model.Comment) (*model.
 	panic(fmt.Errorf("not implemented: Post - post"))
 }
 
-// Author is the resolver for the author field.
-func (r *commentResolver) Author(ctx context.Context, obj *model.Comment) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: Author - author"))
-}
-
 // CreateComment is the resolver for the createComment field.
 func (r *mutationResolver) CreateComment(ctx context.Context, input model.CreateCommentInput) (*model.CreateCommentPayload, error) {
 	panic(fmt.Errorf("not implemented: CreateComment - createComment"))

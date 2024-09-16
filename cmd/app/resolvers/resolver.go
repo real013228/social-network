@@ -22,3 +22,9 @@ type userService interface {
 	GetUsers(ctx context.Context) ([]model.User, error)
 	GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error)
 }
+
+type postService interface {
+	CreatePost(ctx context.Context, post model.CreatePostInput) (string, error)
+	GetPosts(ctx context.Context) ([]model.Post, error)
+	GetPostsByFilter(ctx context.Context, filter model.PostsFilter) ([]model.Post, error)
+}

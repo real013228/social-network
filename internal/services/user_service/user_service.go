@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/real013228/social-network/internal/model"
 	"github.com/real013228/social-network/internal/storages/user_storage"
 )
@@ -13,7 +14,7 @@ var (
 )
 
 type userStorage interface {
-	CreateUser(ctx context.Context, user model.CreateUserInput) (string, error)
+	CreateUser(ctx context.Context, user model.User) (string, error)
 	GetUsers(ctx context.Context) ([]model.User, error)
 	GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error)
 	GetUserByEmail(ctx context.Context, email string) (model.User, error)
@@ -34,7 +35,13 @@ func (s UserService) CreateUser(ctx context.Context, user model.CreateUserInput)
 		return "", ErrUserExists
 	}
 
-	email, err := s.storage.CreateUser(ctx, user)
+	newID := uuid.New()
+	var usr = model.User{
+		ID:       newID.String(),
+		Email:    user.Email,
+		Username: user.Username,
+	}
+	email, err := s.storage.CreateUser(ctx, usr)
 	if err != nil {
 		return "", fmt.Errorf("user_storage.CreateUser email:%s %w", user.Email, err)
 	}

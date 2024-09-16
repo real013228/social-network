@@ -43,6 +43,7 @@ func (r *queryResolver) Users(ctx context.Context, filter *model.UsersFilter) (*
 			return nil, err
 		}
 		for _, user := range users {
+			user := user
 			payload.Users = append(payload.Users, &user)
 		}
 	}

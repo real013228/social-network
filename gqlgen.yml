@@ -93,14 +93,10 @@ models:
   Post:
 #    model: github.com/real013228/social-network/cmd/app/model/model.Post
     fields:
-      author:
-        resolver: true
       comments:
         resolver: true
   Comment:
 #    model: github.com/real013228/social-network/cmd/app/model/model.Comment
     fields:
-      author:
-        resolver: true
       post:
         resolver: true

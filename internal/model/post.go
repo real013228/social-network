@@ -1,9 +1,10 @@
 package model
 
 type CreatePostInput struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	AuthorID    string `json:"authorID"`
+	Title           string `json:"title"`
+	Description     string `json:"description"`
+	AuthorID        string `json:"authorID"`
+	CommentsAllowed bool   `json:"commentsAllowed"`
 }
 
 type CreatePostPayload struct {
@@ -15,7 +16,7 @@ type Post struct {
 	Title           string     `json:"title"`
 	Description     string     `json:"description"`
 	Comments        []*Comment `json:"comments"`
-	Author          *User      `json:"author"`
+	AuthorID        string     `json:"authorID"`
 	CommentsAllowed bool       `json:"commentsAllowed"`
 }
 

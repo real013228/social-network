@@ -15,14 +15,14 @@ type UserStoragePostgres struct {
 	client storages.Client
 }
 
-func (s UserStoragePostgres) CreateUser(ctx context.Context, user model.CreateUserInput) (string, error) {
+func (s UserStoragePostgres) CreateUser(ctx context.Context, user model.User) (string, error) {
 	q := `
-		INSERT INTO users (username, email) 
-		VALUES ($1, $2)
+		INSERT INTO users (id, username, email) 
+		VALUES ($1, $2, $3)
 		RETURNING id
 	`
 	var userId string
-	if err := s.client.QueryRow(ctx, q, user.Username, user.Email).Scan(&userId); err != nil {
+	if err := s.client.QueryRow(ctx, q, user.ID, user.Username, user.Email).Scan(&userId); err != nil {
 		return "", err
 	}
 	return userId, nil
