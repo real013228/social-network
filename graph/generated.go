@@ -39,6 +39,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Comment() CommentResolver
+	CreateCommentPayload() CreateCommentPayloadResolver
 	CreateUserPayload() CreateUserPayloadResolver
 	Mutation() MutationResolver
 	Post() PostResolver
@@ -53,7 +54,7 @@ type ComplexityRoot struct {
 	Comment struct {
 		Author func(childComplexity int) int
 		ID     func(childComplexity int) int
-		Post   func(childComplexity int) int
+		PostID func(childComplexity int) int
 		Text   func(childComplexity int) int
 	}
 
@@ -62,7 +63,7 @@ type ComplexityRoot struct {
 	}
 
 	CreateCommentPayload struct {
-		Comment func(childComplexity int) int
+		CommentID func(childComplexity int) int
 	}
 
 	CreatePostPayload struct {
@@ -111,8 +112,10 @@ type ComplexityRoot struct {
 }
 
 type CommentResolver interface {
-	Post(ctx context.Context, obj *model.Comment) (*model.Post, error)
 	Author(ctx context.Context, obj *model.Comment) (*model.User, error)
+}
+type CreateCommentPayloadResolver interface {
+	CommentID(ctx context.Context, obj *model.CreateCommentPayload) (string, error)
 }
 type CreateUserPayloadResolver interface {
 	UserID(ctx context.Context, obj *model.CreateUserPayload) (string, error)
@@ -167,12 +170,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Comment.ID(childComplexity), true
 
-	case "Comment.post":
-		if e.complexity.Comment.Post == nil {
+	case "Comment.postID":
+		if e.complexity.Comment.PostID == nil {
 			break
 		}
 
-		return e.complexity.Comment.Post(childComplexity), true
+		return e.complexity.Comment.PostID(childComplexity), true
 
 	case "Comment.text":
 		if e.complexity.Comment.Text == nil {
@@ -188,12 +191,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CommentPayload.Comments(childComplexity), true
 
-	case "CreateCommentPayload.comment":
-		if e.complexity.CreateCommentPayload.Comment == nil {
+	case "CreateCommentPayload.commentID":
+		if e.complexity.CreateCommentPayload.CommentID == nil {
 			break
 		}
 
-		return e.complexity.CreateCommentPayload.Comment(childComplexity), true
+		return e.complexity.CreateCommentPayload.CommentID(childComplexity), true
 
 	case "CreatePostPayload.post":
 		if e.complexity.CreatePostPayload.Post == nil {
@@ -479,7 +482,7 @@ var sources = []*ast.Source{
 	{Name: "../schema/comment.graphqls", Input: `type Comment {
     id: ID!
     text: String!
-    post: Post!
+    postID: String!
     author: User!
 }
 
@@ -504,7 +507,7 @@ input CreateCommentInput {
 }
 
 type CreateCommentPayload {
-    comment: Comment!
+    commentID: String!
 }
 
 extend type Mutation {
@@ -969,8 +972,8 @@ func (ec *executionContext) fieldContext_Comment_text(_ context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Comment_post(ctx context.Context, field graphql.CollectedField, obj *model.Comment) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Comment_post(ctx, field)
+func (ec *executionContext) _Comment_postID(ctx context.Context, field graphql.CollectedField, obj *model.Comment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Comment_postID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -983,7 +986,7 @@ func (ec *executionContext) _Comment_post(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Comment().Post(rctx, obj)
+		return obj.PostID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -995,33 +998,19 @@ func (ec *executionContext) _Comment_post(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Post)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNPost2ᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐPost(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Comment_post(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Comment_postID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Comment",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Post_id(ctx, field)
-			case "title":
-				return ec.fieldContext_Post_title(ctx, field)
-			case "description":
-				return ec.fieldContext_Post_description(ctx, field)
-			case "comments":
-				return ec.fieldContext_Post_comments(ctx, field)
-			case "authorID":
-				return ec.fieldContext_Post_authorID(ctx, field)
-			case "commentsAllowed":
-				return ec.fieldContext_Post_commentsAllowed(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Post", field.Name)
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1121,8 +1110,8 @@ func (ec *executionContext) fieldContext_CommentPayload_comments(_ context.Conte
 				return ec.fieldContext_Comment_id(ctx, field)
 			case "text":
 				return ec.fieldContext_Comment_text(ctx, field)
-			case "post":
-				return ec.fieldContext_Comment_post(ctx, field)
+			case "postID":
+				return ec.fieldContext_Comment_postID(ctx, field)
 			case "author":
 				return ec.fieldContext_Comment_author(ctx, field)
 			}
@@ -1132,8 +1121,8 @@ func (ec *executionContext) fieldContext_CommentPayload_comments(_ context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _CreateCommentPayload_comment(ctx context.Context, field graphql.CollectedField, obj *model.CreateCommentPayload) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CreateCommentPayload_comment(ctx, field)
+func (ec *executionContext) _CreateCommentPayload_commentID(ctx context.Context, field graphql.CollectedField, obj *model.CreateCommentPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateCommentPayload_commentID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1146,7 +1135,7 @@ func (ec *executionContext) _CreateCommentPayload_comment(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Comment, nil
+		return ec.resolvers.CreateCommentPayload().CommentID(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1158,29 +1147,19 @@ func (ec *executionContext) _CreateCommentPayload_comment(ctx context.Context, f
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Comment)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNComment2ᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐComment(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_CreateCommentPayload_comment(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CreateCommentPayload_commentID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "CreateCommentPayload",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Comment_id(ctx, field)
-			case "text":
-				return ec.fieldContext_Comment_text(ctx, field)
-			case "post":
-				return ec.fieldContext_Comment_post(ctx, field)
-			case "author":
-				return ec.fieldContext_Comment_author(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Comment", field.Name)
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1383,8 +1362,8 @@ func (ec *executionContext) fieldContext_Mutation_createComment(ctx context.Cont
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "comment":
-				return ec.fieldContext_CreateCommentPayload_comment(ctx, field)
+			case "commentID":
+				return ec.fieldContext_CreateCommentPayload_commentID(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type CreateCommentPayload", field.Name)
 		},
@@ -1634,8 +1613,8 @@ func (ec *executionContext) fieldContext_Post_comments(_ context.Context, field 
 				return ec.fieldContext_Comment_id(ctx, field)
 			case "text":
 				return ec.fieldContext_Comment_text(ctx, field)
-			case "post":
-				return ec.fieldContext_Comment_post(ctx, field)
+			case "postID":
+				return ec.fieldContext_Comment_postID(ctx, field)
 			case "author":
 				return ec.fieldContext_Comment_author(ctx, field)
 			}
@@ -4393,7 +4372,7 @@ func (ec *executionContext) _Comment(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "post":
+		case "postID":
 			field := field
 
 			if field.Deferrable != nil {
@@ -4407,14 +4386,14 @@ func (ec *executionContext) _Comment(ctx context.Context, sel ast.SelectionSet, 
 					deferred[field.Deferrable.Label] = dfs
 				}
 				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return ec._Comment_post(ctx, field, obj)
+					return ec._Comment_postID(ctx, field, obj)
 				})
 
 				// don't run the out.Concurrently() call below
 				out.Values[i] = graphql.Null
 				continue
 			}
-			out.Values[i] = ec._Comment_post(ctx, field, obj)
+			out.Values[i] = ec._Comment_postID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -4533,7 +4512,7 @@ func (ec *executionContext) _CreateCommentPayload(ctx context.Context, sel ast.S
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("CreateCommentPayload")
-		case "comment":
+		case "commentID":
 			field := field
 
 			if field.Deferrable != nil {
@@ -4547,14 +4526,14 @@ func (ec *executionContext) _CreateCommentPayload(ctx context.Context, sel ast.S
 					deferred[field.Deferrable.Label] = dfs
 				}
 				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return ec._CreateCommentPayload_comment(ctx, field, obj)
+					return ec._CreateCommentPayload_commentID(ctx, field, obj)
 				})
 
 				// don't run the out.Concurrently() call below
 				out.Values[i] = graphql.Null
 				continue
 			}
-			out.Values[i] = ec._CreateCommentPayload_comment(ctx, field, obj)
+			out.Values[i] = ec._CreateCommentPayload_commentID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -6343,16 +6322,6 @@ func (ec *executionContext) marshalNComment2ᚕᚖgithubᚗcomᚋreal013228ᚋso
 	return ret
 }
 
-func (ec *executionContext) marshalNComment2ᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐComment(ctx context.Context, sel ast.SelectionSet, v *model.Comment) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Comment(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNCreateCommentInput2githubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐCreateCommentInput(ctx context.Context, v interface{}) (model.CreateCommentInput, error) {
 	res, err := ec.unmarshalInputCreateCommentInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6395,10 +6364,6 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalNPost2githubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v model.Post) graphql.Marshaler {
-	return ec._Post(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNPost2ᚕᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v []*model.Post) graphql.Marshaler {

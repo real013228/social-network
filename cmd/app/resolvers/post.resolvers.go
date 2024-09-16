@@ -6,6 +6,7 @@ package resolvers
 
 import (
 	"context"
+
 	"github.com/real013228/social-network/graph"
 	"github.com/real013228/social-network/internal/model"
 )

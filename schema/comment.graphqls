@@ -1,7 +1,7 @@
 type Comment {
     id: ID!
     text: String!
-    post: Post!
+    postID: String!
     author: User!
 }
 
@@ -10,8 +10,6 @@ type CommentPayload {
 }
 
 input CommentsFilter {
-    commentID: ID
-    postID: ID
     authorID: ID
 }
 
@@ -26,7 +24,7 @@ input CreateCommentInput {
 }
 
 type CreateCommentPayload {
-    comment: Comment!
+    commentID: String!
 }
 
 extend type Mutation {

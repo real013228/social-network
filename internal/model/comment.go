@@ -12,9 +12,7 @@ type CommentPayload struct {
 }
 
 type CommentsFilter struct {
-	CommentID *string `json:"commentID,omitempty"`
-	PostID    *string `json:"postID,omitempty"`
-	AuthorID  *string `json:"authorID,omitempty"`
+	AuthorID *string `json:"authorID,omitempty"`
 }
 
 type CreateCommentInput struct {
@@ -24,5 +22,5 @@ type CreateCommentInput struct {
 }
 
 type CreateCommentPayload struct {
-	Comment *Comment `json:"comment"`
+	CommentID string `json:"comment"`
 }
