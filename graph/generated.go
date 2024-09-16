@@ -39,7 +39,6 @@ type Config struct {
 
 type ResolverRoot interface {
 	Comment() CommentResolver
-	CreateCommentPayload() CreateCommentPayloadResolver
 	CreateUserPayload() CreateUserPayloadResolver
 	Mutation() MutationResolver
 	Post() PostResolver
@@ -113,9 +112,6 @@ type ComplexityRoot struct {
 
 type CommentResolver interface {
 	Author(ctx context.Context, obj *model.Comment) (*model.User, error)
-}
-type CreateCommentPayloadResolver interface {
-	CommentID(ctx context.Context, obj *model.CreateCommentPayload) (string, error)
 }
 type CreateUserPayloadResolver interface {
 	UserID(ctx context.Context, obj *model.CreateUserPayload) (string, error)
@@ -491,8 +487,6 @@ type CommentPayload {
 }
 
 input CommentsFilter {
-    commentID: ID
-    postID: ID
     authorID: ID
 }
 
@@ -1135,7 +1129,7 @@ func (ec *executionContext) _CreateCommentPayload_commentID(ctx context.Context,
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.CreateCommentPayload().CommentID(rctx, obj)
+		return obj.CommentID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1156,8 +1150,8 @@ func (ec *executionContext) fieldContext_CreateCommentPayload_commentID(_ contex
 	fc = &graphql.FieldContext{
 		Object:     "CreateCommentPayload",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -4085,27 +4079,13 @@ func (ec *executionContext) unmarshalInputCommentsFilter(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"commentID", "postID", "authorID"}
+	fieldsInOrder := [...]string{"authorID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "commentID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("commentID"))
-			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CommentID = data
-		case "postID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postID"))
-			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PostID = data
 		case "authorID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authorID"))
 			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
