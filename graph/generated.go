@@ -487,7 +487,9 @@ type CommentPayload {
 }
 
 input CommentsFilter {
-    authorID: ID
+    postID: ID
+    pageLimit: Int!
+    pageNumber: Int!
 }
 
 extend type Query {
@@ -524,6 +526,8 @@ input PostsFilter {
     postID: ID
     authorID: ID
     withComments: Boolean
+    pageLimit: Int!
+    pageNumber: Int!
 }
 
 extend type Query {
@@ -557,6 +561,8 @@ type UserPayload {
 
 input UsersFilter {
     userID: ID
+    pageLimit: Int!
+    pageNumber: Int!
 }
 
 type Query {
@@ -4079,20 +4085,34 @@ func (ec *executionContext) unmarshalInputCommentsFilter(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"authorID"}
+	fieldsInOrder := [...]string{"postID", "pageLimit", "pageNumber"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "authorID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authorID"))
+		case "postID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postID"))
 			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AuthorID = data
+			it.PostID = data
+		case "pageLimit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageLimit"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PageLimit = data
+		case "pageNumber":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageNumber"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PageNumber = data
 		}
 	}
 
@@ -4222,7 +4242,7 @@ func (ec *executionContext) unmarshalInputPostsFilter(ctx context.Context, obj i
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"postID", "authorID", "withComments"}
+	fieldsInOrder := [...]string{"postID", "authorID", "withComments", "pageLimit", "pageNumber"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4250,6 +4270,20 @@ func (ec *executionContext) unmarshalInputPostsFilter(ctx context.Context, obj i
 				return it, err
 			}
 			it.WithComments = data
+		case "pageLimit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageLimit"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PageLimit = data
+		case "pageNumber":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageNumber"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PageNumber = data
 		}
 	}
 
@@ -4263,7 +4297,7 @@ func (ec *executionContext) unmarshalInputUsersFilter(ctx context.Context, obj i
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"userID"}
+	fieldsInOrder := [...]string{"userID", "pageLimit", "pageNumber"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4277,6 +4311,20 @@ func (ec *executionContext) unmarshalInputUsersFilter(ctx context.Context, obj i
 				return it, err
 			}
 			it.UserID = data
+		case "pageLimit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageLimit"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PageLimit = data
+		case "pageNumber":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pageNumber"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PageNumber = data
 		}
 	}
 
@@ -6338,6 +6386,21 @@ func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface
 
 func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	res := graphql.MarshalID(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

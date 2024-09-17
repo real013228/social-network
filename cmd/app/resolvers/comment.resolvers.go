@@ -34,7 +34,7 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.Create
 
 // Comments is the resolver for the comments field.
 func (r *queryResolver) Comments(ctx context.Context, filter *model.CommentsFilter) (*model.CommentPayload, error) {
-	comms, err := r.commentService.GetCommentsByAuthorID(ctx, *filter.AuthorID)
+	comms, err := r.commentService.GetComments(ctx, *filter)
 	if err != nil {
 		return nil, err
 	}
@@ -54,19 +54,3 @@ func (r *queryResolver) Comments(ctx context.Context, filter *model.CommentsFilt
 func (r *Resolver) Comment() graph.CommentResolver { return &commentResolver{r} }
 
 type commentResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *createCommentPayloadResolver) CommentID(ctx context.Context, obj *model.CreateCommentPayload) (string, error) {
-	panic(fmt.Errorf("not implemented: CommentID - commentID"))
-}
-func (r *Resolver) CreateCommentPayload() graph.CreateCommentPayloadResolver {
-	return &createCommentPayloadResolver{r}
-}
-type createCommentPayloadResolver struct{ *Resolver }
-*/

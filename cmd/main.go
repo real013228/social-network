@@ -43,6 +43,22 @@ func initializePostgreSQLServer(cfg storages.StorageConfig) *handler.Server {
 	return srv
 }
 
+func initializeInMemoryServer(cfg storages.StorageConfig) *handler.Server {
+	userStorageInMemory := user_storage.NewUserStorageInMemory()
+	postStorageInMemory := post_storage.NewPostStorageInMemory()
+	commentStorageInMemory := comment_storage.NewCommentStorageInMemory()
+	userService := user_service.NewUserService(userStorageInMemory)
+	postService := post_service.NewPostService(postStorageInMemory, userStorageInMemory)
+	commentService := comment_service.NewCommentService(commentStorageInMemory, userStorageInMemory, postStorageInMemory)
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolvers.NewResolver(
+		userService,
+		postService,
+		commentService,
+	),
+	}))
+	return srv
+}
+
 func main() {
 	err := godotenv.Load(".env")
 	if err != nil {

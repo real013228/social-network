@@ -27,5 +27,7 @@ type UserPayload struct {
 }
 
 type UsersFilter struct {
-	UserID *string `json:"userID,omitempty"`
+	UserID     *string `json:"userID,omitempty"`
+	PageLimit  int     `json:"pageLimit"`
+	PageNumber int     `json:"pageNumber"`
 }

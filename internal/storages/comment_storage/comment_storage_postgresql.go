@@ -23,13 +23,14 @@ func (s *CommentStoragePostgres) CreateComment(ctx context.Context, input model.
 	return id, nil
 }
 
-func (s *CommentStoragePostgres) GetCommentsByPostID(ctx context.Context, postID string) ([]model.Comment, error) {
+func (s *CommentStoragePostgres) GetCommentsByPostID(ctx context.Context, filter model.CommentsFilter) ([]model.Comment, error) {
 	q := `
 		SELECT id, text, post_id, author_id
 		FROM comments
-		WHERE post_id = $1;
+		WHERE post_id = $1
+		LIMIT $2 OFFSET $3;
 	`
-	rows, err := s.client.Query(ctx, q, postID)
+	rows, err := s.client.Query(ctx, q, filter.PostID, filter.PageLimit, filter.PageNumber*filter.PageLimit)
 	if err != nil {
 		return nil, err
 	}

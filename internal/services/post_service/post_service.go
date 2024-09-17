@@ -14,10 +14,9 @@ var (
 
 type postStorage interface {
 	CreatePost(ctx context.Context, post model.Post) (string, error)
-	GetPosts(ctx context.Context) ([]model.Post, error)
+	GetPosts(ctx context.Context, filter model.PostsFilter) ([]model.Post, error)
 	GetPostsByUserID(ctx context.Context, userID string) ([]model.Post, error)
 	GetPostByID(ctx context.Context, postID string) (model.Post, error)
-	GetPostWithAllowedComments(ctx context.Context) ([]model.Post, error)
 }
 
 type userStorage interface {
@@ -58,8 +57,8 @@ func (s *PostService) CreatePost(ctx context.Context, post model.CreatePostInput
 	return id, nil
 }
 
-func (s *PostService) GetPosts(ctx context.Context) ([]model.Post, error) {
-	posts, err := s.GetPosts(ctx)
+func (s *PostService) GetPosts(ctx context.Context, filter model.PostsFilter) ([]model.Post, error) {
+	posts, err := s.GetPosts(ctx, filter)
 	if err != nil {
 		return nil, err
 	}

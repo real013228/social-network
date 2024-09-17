@@ -12,7 +12,7 @@ import (
 
 type commentStorage interface {
 	CreateComment(ctx context.Context, input model.Comment) (string, error)
-	GetCommentsByPostID(ctx context.Context, postID string) ([]model.Comment, error)
+	GetCommentsByPostID(ctx context.Context, filter model.CommentsFilter) ([]model.Comment, error)
 	GetCommentsByUserID(ctx context.Context, userID string) ([]model.Comment, error)
 }
 
@@ -63,18 +63,19 @@ func (c *CommentService) CreateComment(ctx context.Context, comment model.Create
 	return id, nil
 }
 
-func (c *CommentService) GetCommentsByPostID(ctx context.Context, postID string) ([]model.Comment, error) {
-	if _, err := c.postStorage.GetPostByID(ctx, postID); err != nil {
+func (c *CommentService) GetComments(ctx context.Context, filter model.CommentsFilter) ([]model.Comment, error) {
+	if _, err := c.postStorage.GetPostByID(ctx, *filter.PostID); err != nil {
 		if !errors.Is(err, post_storage.ErrPostNotFound) {
 			return nil, fmt.Errorf("post_storage.GetPostByID: %w", err)
 		}
 		return nil, post_storage.ErrPostNotFound
 	}
 
-	comms, err := c.storage.GetCommentsByPostID(ctx, postID)
+	comms, err := c.storage.GetCommentsByPostID(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
+
 	return comms, nil
 }
 

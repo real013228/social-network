@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/real013228/social-network/internal/model"
+	"github.com/real013228/social-network/tools"
 	"strconv"
 	"sync"
 )
@@ -27,21 +28,13 @@ func (u *UserStorageInMemory) CreateUser(ctx context.Context, user model.User) (
 	return res, nil
 }
 
-func (u *UserStorageInMemory) GetUsers(ctx context.Context, pageLimit, pageNumber int) ([]model.User, error) {
+func (u *UserStorageInMemory) GetUsers(ctx context.Context, filter model.UsersFilter) ([]model.User, error) {
 	u.mu.RLock()
 	defer u.mu.RUnlock()
-	if pageLimit <= 0 || pageNumber <= 0 {
-		return nil, ErrInvalidPaginationParams
+	startIndex, endIndex, err := tools.Paginate(filter.PageLimit, filter.PageNumber, u.cnt)
+	if err != nil {
+		return nil, err
 	}
-	startIndex := (pageNumber - 1) * pageLimit
-	if startIndex >= u.cnt {
-		return nil, nil
-	}
-	endIndex := startIndex + pageLimit
-	if endIndex > u.cnt {
-		endIndex = u.cnt
-	}
-
 	return u.users[startIndex:endIndex], nil
 }
 
@@ -67,4 +60,12 @@ func (u *UserStorageInMemory) GetUserByEmail(ctx context.Context, email string) 
 		}
 	}
 	return model.User{}, ErrUserNotFound
+}
+
+func NewUserStorageInMemory() *UserStorageInMemory {
+	return &UserStorageInMemory{
+		users: make([]model.User, 0),
+		cnt:   0,
+		mu:    sync.RWMutex{},
+	}
 }

@@ -11,6 +11,11 @@ import (
 	"github.com/real013228/social-network/internal/model"
 )
 
+const (
+	defaultPageLimit  = 10
+	defaultPageNumber = 0
+)
+
 // CreatePost is the resolver for the createPost field.
 func (r *mutationResolver) CreatePost(ctx context.Context, input model.CreatePostInput) (*model.CreatePostPayload, error) {
 	var createPostPayload model.CreatePostPayload
@@ -28,7 +33,7 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.CreatePos
 
 // Comments is the resolver for the comments field.
 func (r *postResolver) Comments(ctx context.Context, obj *model.Post) ([]*model.Comment, error) {
-	comms, err := r.commentService.GetCommentsByPostID(ctx, obj.ID)
+	comms, err := r.commentService.GetComments(ctx, model.CommentsFilter{PostID: &obj.ID, PageLimit: defaultPageLimit, PageNumber: defaultPageNumber})
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +48,7 @@ func (r *postResolver) Comments(ctx context.Context, obj *model.Post) ([]*model.
 
 // Posts is the resolver for the posts field.
 func (r *queryResolver) Posts(ctx context.Context, filter *model.PostsFilter) (*model.PostPayload, error) {
-	posts, err := r.postService.GetPostsByFilter(ctx, *filter)
+	posts, err := r.postService.GetPosts(ctx, *filter)
 	if err != nil {
 		return nil, err
 	}

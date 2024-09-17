@@ -15,7 +15,7 @@ var (
 
 type userStorage interface {
 	CreateUser(ctx context.Context, user model.User) (string, error)
-	GetUsers(ctx context.Context) ([]model.User, error)
+	GetUsers(ctx context.Context, filter model.UsersFilter) ([]model.User, error)
 	GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error)
 	GetUserByEmail(ctx context.Context, email string) (model.User, error)
 }
@@ -48,8 +48,8 @@ func (s *UserService) CreateUser(ctx context.Context, user model.CreateUserInput
 	return id, nil
 }
 
-func (s *UserService) GetUsers(ctx context.Context, pageLimit, pageNumber int) ([]model.User, error) {
-	users, err := s.storage.GetUsers(ctx)
+func (s *UserService) GetUsers(ctx context.Context, filter model.UsersFilter) ([]model.User, error) {
+	users, err := s.storage.GetUsers(ctx, filter)
 	if err != nil {
 		return nil, fmt.Errorf("user_storage.GetUsers %w", err)
 	}

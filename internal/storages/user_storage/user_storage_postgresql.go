@@ -28,11 +28,12 @@ func (s *UserStoragePostgres) CreateUser(ctx context.Context, user model.User) (
 	return userId, nil
 }
 
-func (s *UserStoragePostgres) GetUsers(ctx context.Context) ([]model.User, error) {
+func (s *UserStoragePostgres) GetUsers(ctx context.Context, filter model.UsersFilter) ([]model.User, error) {
 	q := `
 		SELECT id, username, email FROM public.users
+		LIMIT $1 OFFSET $2
 	`
-	rows, err := s.client.Query(ctx, q)
+	rows, err := s.client.Query(ctx, q, filter.PageLimit, filter.PageNumber*filter.PageLimit)
 	if err != nil {
 		return nil, err
 	}

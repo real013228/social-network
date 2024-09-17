@@ -38,7 +38,7 @@ func (r *queryResolver) Users(ctx context.Context, filter *model.UsersFilter) (*
 		}
 		payload.Users = append(payload.Users, &user)
 	} else {
-		users, err := r.userService.GetUsers(ctx)
+		users, err := r.userService.GetUsers(ctx, *filter)
 		if err != nil {
 			return nil, err
 		}

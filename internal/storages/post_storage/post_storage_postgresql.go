@@ -30,11 +30,12 @@ func (s *PostStoragePostgres) CreatePost(ctx context.Context, post model.Post) (
 	return id, nil
 }
 
-func (s *PostStoragePostgres) GetPosts(ctx context.Context) ([]model.Post, error) {
+func (s *PostStoragePostgres) GetPosts(ctx context.Context, filter model.PostsFilter) ([]model.Post, error) {
 	q := `
-		SELECT id, title, description, author_id FROM posts;
+		SELECT id, title, description, author_id FROM posts
+    	LIMIT $1 OFFSET $2;
 	`
-	rows, err := s.client.Query(ctx, q)
+	rows, err := s.client.Query(ctx, q, filter.PageLimit, filter.PageNumber*filter.PageLimit)
 	if err != nil {
 		return nil, err
 	}

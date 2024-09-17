@@ -12,7 +12,9 @@ type CommentPayload struct {
 }
 
 type CommentsFilter struct {
-	AuthorID *string `json:"authorID,omitempty"`
+	PostID     *string `json:"authorID,omitempty"`
+	PageLimit  int     `json:"pageLimit"`
+	PageNumber int     `json:"pageNumber"`
 }
 
 type CreateCommentInput struct {

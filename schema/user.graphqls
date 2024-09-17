@@ -11,6 +11,8 @@ type UserPayload {
 
 input UsersFilter {
     userID: ID
+    pageLimit: Int!
+    pageNumber: Int!
 }
 
 type Query {

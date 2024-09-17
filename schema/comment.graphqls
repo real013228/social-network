@@ -10,7 +10,9 @@ type CommentPayload {
 }
 
 input CommentsFilter {
-    authorID: ID
+    postID: ID
+    pageLimit: Int!
+    pageNumber: Int!
 }
 
 extend type Query {

@@ -28,4 +28,6 @@ type PostsFilter struct {
 	PostID       *string `json:"postID,omitempty"`
 	AuthorID     *string `json:"authorID,omitempty"`
 	WithComments *bool   `json:"withComments,omitempty"`
+	PageLimit    int     `json:"pageLimit"`
+	PageNumber   int     `json:"pageNumber"`
 }
