@@ -20,6 +20,12 @@ import (
 )
 
 // add comment
+// todo fix && define storages logic
+// todo unit tests
+// todo test my code with integration test(by clicking UI)
+// todo somehow make docker-image of service
+// todo cool readme
+// dl thursday
 const defaultPort = "8080"
 
 func initializePostgreSQLServer(cfg storages.StorageConfig) *handler.Server {

@@ -17,6 +17,41 @@ type PostStoragePostgres struct {
 	userStorage user_storage.UserStoragePostgres
 }
 
+func (s *PostStoragePostgres) Subscribe(ctx context.Context, subscribeInput model.SubscribeInput) (string, error) {
+	q := `
+		INSERT INTO subscriptions (post_id, user_id)
+		VALUES ($1, $2)
+	`
+	if err := s.client.QueryRow(ctx, q, subscribeInput.PostID, subscribeInput.UserID).Scan(); err != nil {
+		return "", err
+	}
+	return "successfully subscribed to post", nil
+}
+
+func (s *PostStoragePostgres) getSubscribers(ctx context.Context, postID string) ([]model.User, error) {
+	q := `
+		SELECT user_id
+		FROM subscriptions
+		WHERE post_id = $1
+	`
+	rows, err := s.client.Query(ctx, q, postID)
+	if err != nil {
+		return nil, err
+	}
+	var users []model.User
+	for rows.Next() {
+		var user model.User
+		if err := rows.Scan(&user.ID); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
 func (s *PostStoragePostgres) CreatePost(ctx context.Context, post model.Post) (string, error) {
 	q := `
 		INSERT INTO posts (id, title, description, author_id)

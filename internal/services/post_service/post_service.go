@@ -24,7 +24,7 @@ type postStorage interface {
 	GetPostsByUserID(ctx context.Context, userID string) ([]model.Post, error)
 	GetPostByID(ctx context.Context, postID string) (model.Post, error)
 	Subscribe(ctx context.Context, subscribeInput model.SubscribeInput) (string, error)
-	getSubscribers(ctx context.Context) ([]model.User, error)
+	getSubscribers(ctx context.Context, postID string) ([]model.User, error)
 }
 
 type commentStorage interface {
@@ -143,7 +143,7 @@ func (s *PostService) GetPostsByFilter(ctx context.Context, filter model.PostsFi
 }
 
 func (s *PostService) notifyAll(ctx context.Context, payload model.NotificationPayload) {
-	subscribers, err := s.storage.getSubscribers(ctx)
+	subscribers, err := s.storage.getSubscribers(ctx, payload.PostID)
 	if err == nil {
 		for _, sub := range subscribers {
 			s.userService.notify(ctx, sub.ID, payload)
