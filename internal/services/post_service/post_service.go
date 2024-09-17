@@ -8,6 +8,11 @@ import (
 	"github.com/real013228/social-network/internal/storages/user_storage"
 )
 
+const (
+	DefaultPageLimit  = 10
+	DefaultPageNumber = 0
+)
+
 var (
 	ErrAuthorNotExist = errors.New("author doesn't exist")
 )
