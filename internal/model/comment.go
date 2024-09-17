@@ -1,12 +1,11 @@
 package model
 
 type Comment struct {
-	ID       string    `json:"id"`
-	Text     string    `json:"text"`
-	PostID   string    `json:"postID"`
-	AuthorID string    `json:"authorID"`
-	Replies  []Comment `json:"replies"`
-	ReplyTo  string    `json:"replyTo"`
+	ID       string `json:"id"`
+	Text     string `json:"text"`
+	PostID   string `json:"postID"`
+	AuthorID string `json:"authorID"`
+	ReplyTo  string `json:"replyTo"`
 }
 
 type CommentPayload struct {

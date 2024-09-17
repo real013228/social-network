@@ -14,12 +14,30 @@ type CommentStorageInMemory struct {
 	mu       sync.RWMutex
 }
 
-func NewCommentStorageInMemory() *CommentStorageInMemory {
-	return &CommentStorageInMemory{
-		comments: make([]model.Comment, 0),
-		cnt:      0,
-		mu:       sync.RWMutex{},
+//todo in-memory storage validation
+
+func (c *CommentStorageInMemory) GetCommentByID(ctx context.Context, commentID string) (model.Comment, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	cmtID, err := strconv.Atoi(commentID)
+	if err != nil {
+		return model.Comment{}, err
 	}
+	return c.comments[cmtID], nil
+}
+
+func (c *CommentStorageInMemory) GetReplies(ctx context.Context, commentID string) ([]model.Comment, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	var comments []model.Comment
+	for _, comment := range c.comments {
+		comment := comment
+		if comment.ReplyTo == commentID {
+			comments = append(comments, comment)
+		}
+	}
+
+	return comments, nil
 }
 
 func (c *CommentStorageInMemory) CreateComment(ctx context.Context, input model.Comment) (string, error) {
@@ -28,6 +46,10 @@ func (c *CommentStorageInMemory) CreateComment(ctx context.Context, input model.
 	input.ID = strconv.Itoa(c.cnt)
 	c.cnt = c.cnt + 1
 	c.comments = append(c.comments, input)
+	replyToInd, err := strconv.Atoi(input.ReplyTo)
+	if err != nil || replyToInd < 0 || replyToInd >= len(c.comments) {
+		return "", err
+	}
 	return input.ID, nil
 }
 
@@ -60,4 +82,12 @@ func (c *CommentStorageInMemory) GetCommentsByUserID(ctx context.Context, userID
 		}
 	}
 	return res, nil
+}
+
+func NewCommentStorageInMemory() *CommentStorageInMemory {
+	return &CommentStorageInMemory{
+		comments: make([]model.Comment, 0),
+		cnt:      0,
+		mu:       sync.RWMutex{},
+	}
 }

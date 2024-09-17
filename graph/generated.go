@@ -13,6 +13,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
+	model1 "github.com/real013228/social-network"
 	"github.com/real013228/social-network/internal/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -82,6 +83,12 @@ type ComplexityRoot struct {
 		Subscribe     func(childComplexity int, input model.SubscribeInput) int
 	}
 
+	NotificationPayload struct {
+		CommentAuthorID func(childComplexity int) int
+		PostID          func(childComplexity int) int
+		Text            func(childComplexity int) int
+	}
+
 	Post struct {
 		AuthorID        func(childComplexity int) int
 		Comments        func(childComplexity int) int
@@ -136,7 +143,7 @@ type PostResolver interface {
 }
 type QueryResolver interface {
 	Users(ctx context.Context, filter *model.UsersFilter) (*model.UserPayload, error)
-	Notifications(ctx context.Context, filter *model.UsersFilter) ([]*string, error)
+	Notifications(ctx context.Context, filter *model.UsersFilter) ([]*model1.NotificationPayload, error)
 	Comments(ctx context.Context, filter *model.CommentsFilter) (*model.CommentPayload, error)
 	Posts(ctx context.Context, filter *model.PostsFilter) (*model.PostPayload, error)
 }
@@ -280,6 +287,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Subscribe(childComplexity, args["input"].(model.SubscribeInput)), true
+
+	case "NotificationPayload.commentAuthorID":
+		if e.complexity.NotificationPayload.CommentAuthorID == nil {
+			break
+		}
+
+		return e.complexity.NotificationPayload.CommentAuthorID(childComplexity), true
+
+	case "NotificationPayload.postID":
+		if e.complexity.NotificationPayload.PostID == nil {
+			break
+		}
+
+		return e.complexity.NotificationPayload.PostID(childComplexity), true
+
+	case "NotificationPayload.text":
+		if e.complexity.NotificationPayload.Text == nil {
+			break
+		}
+
+		return e.complexity.NotificationPayload.Text(childComplexity), true
 
 	case "Post.authorID":
 		if e.complexity.Post.AuthorID == nil {
@@ -642,9 +670,15 @@ input UsersFilter {
     pageNumber: Int!
 }
 
+type NotificationPayload {
+    text: String!
+    postID: String!
+    commentAuthorID: String!
+}
+
 type Query {
     users(filter: UsersFilter): UserPayload
-    notifications(filter:UsersFilter): [String]
+    notifications(filter:UsersFilter): [NotificationPayload]
 }
 
 input CreateUserInput {
@@ -1739,6 +1773,138 @@ func (ec *executionContext) fieldContext_Mutation_subscribe(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _NotificationPayload_text(ctx context.Context, field graphql.CollectedField, obj *model1.NotificationPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_NotificationPayload_text(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Text, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_NotificationPayload_text(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "NotificationPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _NotificationPayload_postID(ctx context.Context, field graphql.CollectedField, obj *model1.NotificationPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_NotificationPayload_postID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PostID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_NotificationPayload_postID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "NotificationPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _NotificationPayload_commentAuthorID(ctx context.Context, field graphql.CollectedField, obj *model1.NotificationPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_NotificationPayload_commentAuthorID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CommentAuthorID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_NotificationPayload_commentAuthorID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "NotificationPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Post_id(ctx context.Context, field graphql.CollectedField, obj *model.Post) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Post_id(ctx, field)
 	if err != nil {
@@ -2151,9 +2317,9 @@ func (ec *executionContext) _Query_notifications(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*string)
+	res := resTmp.([]*model1.NotificationPayload)
 	fc.Result = res
-	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+	return ec.marshalONotificationPayload2ᚕᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚐNotificationPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_notifications(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2163,7 +2329,15 @@ func (ec *executionContext) fieldContext_Query_notifications(ctx context.Context
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "text":
+				return ec.fieldContext_NotificationPayload_text(ctx, field)
+			case "postID":
+				return ec.fieldContext_NotificationPayload_postID(ctx, field)
+			case "commentAuthorID":
+				return ec.fieldContext_NotificationPayload_commentAuthorID(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type NotificationPayload", field.Name)
 		},
 	}
 	defer func() {
@@ -5302,6 +5476,115 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
+var notificationPayloadImplementors = []string{"NotificationPayload"}
+
+func (ec *executionContext) _NotificationPayload(ctx context.Context, sel ast.SelectionSet, obj *model1.NotificationPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, notificationPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("NotificationPayload")
+		case "text":
+			field := field
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return ec._NotificationPayload_text(ctx, field, obj)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+			out.Values[i] = ec._NotificationPayload_text(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "postID":
+			field := field
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return ec._NotificationPayload_postID(ctx, field, obj)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+			out.Values[i] = ec._NotificationPayload_postID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "commentAuthorID":
+			field := field
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return ec._NotificationPayload_commentAuthorID(ctx, field, obj)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+			out.Values[i] = ec._NotificationPayload_commentAuthorID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var postImplementors = []string{"Post"}
 
 func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj *model.Post) graphql.Marshaler {
@@ -7538,6 +7821,54 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalONotificationPayload2ᚕᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚐNotificationPayload(ctx context.Context, sel ast.SelectionSet, v []*model1.NotificationPayload) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := true
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalONotificationPayload2ᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚐNotificationPayload(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalONotificationPayload2ᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚐNotificationPayload(ctx context.Context, sel ast.SelectionSet, v *model1.NotificationPayload) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._NotificationPayload(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOPost2ᚕᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v []*model.Post) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -7599,38 +7930,6 @@ func (ec *executionContext) unmarshalOPostsFilter2ᚖgithubᚗcomᚋreal013228�
 	}
 	res, err := ec.unmarshalInputPostsFilter(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]*string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
-	}
-
-	return ret
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

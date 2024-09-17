@@ -32,3 +32,9 @@ type UsersFilter struct {
 	PageLimit  int     `json:"pageLimit"`
 	PageNumber int     `json:"pageNumber"`
 }
+
+type NotificationPayload struct {
+	Text            string `json:"text"`
+	PostID          string `json:"postID"`
+	CommentAuthorID string `json:"commentAuthorID"`
+}

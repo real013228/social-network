@@ -15,9 +15,15 @@ input UsersFilter {
     pageNumber: Int!
 }
 
+type NotificationPayload {
+    text: String!
+    postID: String!
+    commentAuthorID: String!
+}
+
 type Query {
     users(filter: UsersFilter): UserPayload
-    notifications(filter:UsersFilter): [String]
+    notifications(filter:UsersFilter): [NotificationPayload]
 }
 
 input CreateUserInput {

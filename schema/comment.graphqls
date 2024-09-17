@@ -3,7 +3,6 @@ type Comment {
     text: String!
     postID: String!
     author: User!
-    replies: [Comment]
     replyTo: ID
 }
 

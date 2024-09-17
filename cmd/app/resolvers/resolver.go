@@ -23,7 +23,7 @@ type userService interface {
 	CreateUser(ctx context.Context, user model.CreateUserInput) (string, error)
 	GetUsers(ctx context.Context, filter model.UsersFilter) ([]model.User, error)
 	GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error)
-	GetNotifications(ctx context.Context, filter model.UsersFilter) ([]string, error)
+	GetNotifications(ctx context.Context, filter model.UsersFilter) ([]model.NotificationPayload, error)
 }
 
 type postService interface {

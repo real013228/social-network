@@ -6,6 +6,7 @@ package resolvers
 
 import (
 	"context"
+
 	"github.com/real013228/social-network/graph"
 	"github.com/real013228/social-network/internal/model"
 )
@@ -42,12 +43,12 @@ func (r *queryResolver) Users(ctx context.Context, filter *model.UsersFilter) (*
 }
 
 // Notifications is the resolver for the notifications field.
-func (r *queryResolver) Notifications(ctx context.Context, filter *model.UsersFilter) ([]*string, error) {
+func (r *queryResolver) Notifications(ctx context.Context, filter *model.UsersFilter) ([]*model.NotificationPayload, error) {
 	notifications, err := r.userService.GetNotifications(ctx, *filter)
 	if err != nil {
 		return nil, err
 	}
-	var res = make([]*string, 0, len(notifications))
+	var res = make([]*model.NotificationPayload, 0, len(notifications))
 	for _, notification := range notifications {
 		notification := notification
 		res = append(res, &notification)
