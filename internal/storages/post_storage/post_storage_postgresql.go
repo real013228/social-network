@@ -86,7 +86,7 @@ func (s *PostStoragePostgres) GetPostByID(ctx context.Context, postID string) (m
 		WHERE id = $1;
 	`
 	var post model.Post
-	if err := s.client.QueryRow(ctx, q, postID).Scan(&post); err != nil {
+	if err := s.client.QueryRow(ctx, q, postID).Scan(&post.ID, &post.Title, &post.Description, &post.AuthorID); err != nil {
 		return model.Post{}, err
 	}
 	return post, nil

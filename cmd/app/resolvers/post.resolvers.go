@@ -27,6 +27,16 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input model.CreatePos
 	return &createPostPayload, nil
 }
 
+// Subscribe is the resolver for the subscribe field.
+func (r *mutationResolver) Subscribe(ctx context.Context, input model.SubscribeInput) (*model.SubscribePayload, error) {
+	payload, err := r.postService.Subscribe(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return &payload, nil
+}
+
 // Comments is the resolver for the comments field.
 func (r *postResolver) Comments(ctx context.Context, obj *model.Post) ([]*model.Comment, error) {
 	comms, err := r.commentService.GetComments(ctx, model.CommentsFilter{PostID: &obj.ID, PageLimit: post_service.DefaultPageLimit, PageNumber: post_service.DefaultPageNumber})

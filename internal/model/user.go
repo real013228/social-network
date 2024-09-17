@@ -16,10 +16,11 @@ type Query struct {
 }
 
 type User struct {
-	ID       string  `json:"id"`
-	Username string  `json:"username"`
-	Email    string  `json:"email"`
-	Posts    []*Post `json:"posts"`
+	ID            string   `json:"id"`
+	Username      string   `json:"username"`
+	Email         string   `json:"email"`
+	Posts         []*Post  `json:"posts"`
+	Notifications []string `json:"notifications"`
 }
 
 type UserPayload struct {

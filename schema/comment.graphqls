@@ -3,6 +3,8 @@ type Comment {
     text: String!
     postID: String!
     author: User!
+    replies: [Comment]
+    replyTo: ID
 }
 
 type CommentPayload {
@@ -23,6 +25,7 @@ input CreateCommentInput {
     text: String!
     postID: String!
     authorID: String!
+    replyTo: ID
 }
 
 type CreateCommentPayload {

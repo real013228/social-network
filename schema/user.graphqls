@@ -17,6 +17,7 @@ input UsersFilter {
 
 type Query {
     users(filter: UsersFilter): UserPayload
+    notifications(filter:UsersFilter): [String]
 }
 
 input CreateUserInput {
@@ -27,6 +28,7 @@ input CreateUserInput {
 type CreateUserPayload {
     userId: String!
 }
+
 
 type Mutation {
     createUser(input: CreateUserInput!): CreateUserPayload

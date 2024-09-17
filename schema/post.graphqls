@@ -33,6 +33,17 @@ type CreatePostPayload {
     post: Post!
 }
 
+input SubscribeInput {
+    userID: String!
+    postID: String!
+}
+
+type SubscribePayload {
+    success: Boolean!
+    message: String
+}
+
 extend type Mutation {
     createPost(input: CreatePostInput!): CreatePostPayload
+    subscribe(input: SubscribeInput!) : SubscribePayload
 }
