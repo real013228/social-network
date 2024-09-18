@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/real013228/social-network/internal/model"
 	"github.com/real013228/social-network/internal/storages/user_storage"
+	"strings"
 )
 
 var (
@@ -19,7 +20,7 @@ type userStorage interface {
 	GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error)
 	GetUserByEmail(ctx context.Context, email string) (model.User, error)
 	GetNotifications(ctx context.Context, filter model.UsersFilter) ([]model.NotificationPayload, error)
-	notify(ctx context.Context, userID string, payload model.NotificationPayload)
+	Notify(ctx context.Context, userID string, payload model.NotificationPayload)
 }
 
 type UserService struct {
@@ -70,16 +71,19 @@ func (s *UserService) GetUsers(ctx context.Context, filter model.UsersFilter) ([
 
 func (s *UserService) GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error) {
 	user, err := s.storage.GetUserByID(ctx, filter)
-	//todo add validation, when user doesnt exist
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return model.User{}, user_storage.ErrUserNotFound
+		}
 		return model.User{}, fmt.Errorf("user_storage.GetUserByID %w", err)
 	}
 
 	return user, nil
 }
 
-func (s *UserService) notify(ctx context.Context, userID string, payload model.NotificationPayload) {
-	s.storage.notify(ctx, userID, payload)
+func (s *UserService) Notify(ctx context.Context, userID string, payload model.NotificationPayload) {
+
+	s.storage.Notify(ctx, userID, payload)
 }
 
 func NewUserService(storage userStorage) *UserService {

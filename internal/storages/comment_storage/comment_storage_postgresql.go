@@ -54,15 +54,28 @@ func (s *CommentStoragePostgres) GetReplies(ctx context.Context, commentID strin
 }
 
 func (s *CommentStoragePostgres) CreateComment(ctx context.Context, input model.Comment) (string, error) {
-	q := `
+	var q string
+	var id string
+	if input.ReplyTo == "" {
+		q = `
+		INSERT INTO comments (id, text, post_id, author_id)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id;
+	`
+		if err := s.client.QueryRow(ctx, q, input.ID, input.Text, input.PostID, input.AuthorID).Scan(&id); err != nil {
+			return "", err
+		}
+	} else {
+		q = `
 		INSERT INTO comments (id, text, post_id, author_id, reply_to)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id;
 	`
-	var id string
-	if err := s.client.QueryRow(ctx, q, input.ID, input.Text, input.PostID, input.AuthorID, input.ReplyTo).Scan(&id); err != nil {
-		return "", err
+		if err := s.client.QueryRow(ctx, q, input.ID, input.Text, input.PostID, input.AuthorID, input.ReplyTo).Scan(&id); err != nil {
+			return "", err
+		}
 	}
+
 	return id, nil
 }
 

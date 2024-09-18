@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/real013228/social-network/internal/model"
 	"github.com/real013228/social-network/internal/storages"
+	"log"
 )
 
 var (
@@ -13,6 +14,45 @@ var (
 
 type UserStoragePostgres struct {
 	client storages.Client
+}
+
+func (s *UserStoragePostgres) GetNotifications(ctx context.Context, filter model.UsersFilter) ([]model.NotificationPayload, error) {
+	q := `
+		SELECT text, post_id, author_id
+		FROM notifications
+		WHERE receiver_id = $1
+		LIMIT $2 OFFSET $3
+	`
+	rows, err := s.client.Query(ctx, q, *filter.UserID, filter.PageLimit, filter.PageNumber*filter.PageLimit)
+	if err != nil {
+		return nil, err
+	}
+	var notifications []model.NotificationPayload
+	for rows.Next() {
+		var notification model.NotificationPayload
+		if err := rows.Scan(&notification.Text, &notification.PostID, &notification.CommentAuthorID); err != nil {
+			return nil, err
+		}
+		notifications = append(notifications, notification)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return notifications, nil
+}
+
+func (s *UserStoragePostgres) Notify(ctx context.Context, userID string, payload model.NotificationPayload) {
+	q := `
+		INSERT INTO notifications (id, receiver_id, text, post_id, comment_author_id)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id
+	`
+	var id string
+	if err := s.client.QueryRow(ctx, q, payload.ID, userID, payload.Text, payload.PostID, payload.CommentAuthorID).Scan(&id); err != nil {
+		log.Println(err)
+	}
+	return
 }
 
 func (s *UserStoragePostgres) CreateUser(ctx context.Context, user model.User) (string, error) {

@@ -36,7 +36,7 @@ type postStorage interface {
 }
 
 type postService interface {
-	notifyAll(ctx context.Context, payload model.NotificationPayload)
+	NotifyAll(ctx context.Context, payload model.NotificationPayload)
 }
 
 type CommentService struct {
@@ -94,6 +94,7 @@ func (c *CommentService) CreateComment(ctx context.Context, comment model.Create
 		Text:     comment.Text,
 		AuthorID: comment.AuthorID,
 	}
+
 	comm.ReplyTo = comment.ReplyTo
 	id, err := c.storage.CreateComment(ctx, comm)
 	if err != nil {
@@ -103,7 +104,7 @@ func (c *CommentService) CreateComment(ctx context.Context, comment model.Create
 	notificationPayload.CommentAuthorID = comment.AuthorID
 	notificationPayload.Text = comment.Text
 	notificationPayload.PostID = postID
-	c.postService.notifyAll(ctx, notificationPayload)
+	c.postService.NotifyAll(ctx, notificationPayload)
 
 	return id, nil
 }
@@ -138,6 +139,6 @@ func (c *CommentService) GetCommentsByAuthorID(ctx context.Context, authorID str
 	return comms, nil
 }
 
-func NewCommentService(storage commentStorage, authorStorage authorStorage, postStorage postStorage) *CommentService {
-	return &CommentService{storage: storage, authorStorage: authorStorage, postStorage: postStorage}
+func NewCommentService(storage commentStorage, authorStorage authorStorage, postStorage postStorage, postService postService) *CommentService {
+	return &CommentService{storage: storage, authorStorage: authorStorage, postStorage: postStorage, postService: postService}
 }

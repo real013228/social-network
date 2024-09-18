@@ -6,12 +6,9 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/real013228/social-network/internal/model"
+	"github.com/real013228/social-network/internal/storages/post_storage"
 	"github.com/real013228/social-network/internal/storages/user_storage"
-)
-
-const (
-	DefaultPageLimit  = 10
-	DefaultPageNumber = 0
+	"strings"
 )
 
 var (
@@ -24,7 +21,7 @@ type postStorage interface {
 	GetPostsByUserID(ctx context.Context, userID string) ([]model.Post, error)
 	GetPostByID(ctx context.Context, postID string) (model.Post, error)
 	Subscribe(ctx context.Context, subscribeInput model.SubscribeInput) (string, error)
-	getSubscribers(ctx context.Context, postID string) ([]model.User, error)
+	GetSubscribers(ctx context.Context, postID string) ([]model.User, error)
 }
 
 type commentStorage interface {
@@ -36,7 +33,7 @@ type userStorage interface {
 }
 
 type userService interface {
-	notify(ctx context.Context, userID string, payload model.NotificationPayload)
+	Notify(ctx context.Context, userID string, payload model.NotificationPayload)
 }
 
 type PostService struct {
@@ -46,9 +43,16 @@ type PostService struct {
 	commentStorage commentStorage
 }
 
+func NewPostService(storage postStorage, userStorage userStorage, userService userService, commentStorage commentStorage) *PostService {
+	return &PostService{storage: storage, userStorage: userStorage, userService: userService, commentStorage: commentStorage}
+}
+
 func (s *PostService) Subscribe(ctx context.Context, subscribeInput model.SubscribeInput) (model.SubscribePayload, error) {
 	msg, err := s.storage.Subscribe(ctx, subscribeInput)
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			return model.SubscribePayload{}, fmt.Errorf("user already subscribed to this post, userID: %s, postID: %s", subscribeInput.UserID, subscribeInput.PostID)
+		}
 		return model.SubscribePayload{}, err
 	}
 	var payload model.SubscribePayload
@@ -57,12 +61,22 @@ func (s *PostService) Subscribe(ctx context.Context, subscribeInput model.Subscr
 	return payload, nil
 }
 
+func (s *PostService) GetPostByID(ctx context.Context, postID string) (model.Post, error) {
+	post, err := s.storage.GetPostByID(ctx, postID)
+	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return model.Post{}, post_storage.ErrPostNotFound
+		}
+		return model.Post{}, err
+	}
+	return post, nil
+}
 func (s *PostService) CreatePost(ctx context.Context, post model.CreatePostInput) (string, error) {
 	newID := uuid.New()
 	authorID := post.AuthorID
 	_, err := s.userStorage.GetUserByID(ctx, model.UsersFilter{UserID: &authorID})
 	if err != nil {
-		if !errors.Is(err, user_storage.ErrUserNotFound) {
+		if !errors.Is(err, user_storage.ErrUserNotFound) && !strings.Contains(err.Error(), "no rows in result set") {
 			return "", err
 		}
 		return "", ErrAuthorNotExist
@@ -142,15 +156,11 @@ func (s *PostService) GetPostsByFilter(ctx context.Context, filter model.PostsFi
 	return posts, nil
 }
 
-func (s *PostService) notifyAll(ctx context.Context, payload model.NotificationPayload) {
-	subscribers, err := s.storage.getSubscribers(ctx, payload.PostID)
+func (s *PostService) NotifyAll(ctx context.Context, payload model.NotificationPayload) {
+	subscribers, err := s.storage.GetSubscribers(ctx, payload.PostID)
 	if err == nil {
 		for _, sub := range subscribers {
-			s.userService.notify(ctx, sub.ID, payload)
+			s.userService.Notify(ctx, sub.ID, payload)
 		}
 	}
-}
-
-func NewPostService(storage postStorage, userStorage userStorage) *PostService {
-	return &PostService{storage: storage, userStorage: userStorage}
 }

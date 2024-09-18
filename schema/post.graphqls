@@ -27,6 +27,7 @@ input CreatePostInput {
     title: String!
     description: String!
     authorID: String!
+    commentsAllowed: Boolean!
 }
 
 type CreatePostPayload {

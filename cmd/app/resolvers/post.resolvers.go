@@ -9,7 +9,7 @@ import (
 
 	"github.com/real013228/social-network/graph"
 	"github.com/real013228/social-network/internal/model"
-	"github.com/real013228/social-network/internal/services/post_service"
+	"github.com/real013228/social-network/tools"
 )
 
 // CreatePost is the resolver for the createPost field.
@@ -39,7 +39,7 @@ func (r *mutationResolver) Subscribe(ctx context.Context, input model.SubscribeI
 
 // Comments is the resolver for the comments field.
 func (r *postResolver) Comments(ctx context.Context, obj *model.Post) ([]*model.Comment, error) {
-	comms, err := r.commentService.GetComments(ctx, model.CommentsFilter{PostID: &obj.ID, PageLimit: post_service.DefaultPageLimit, PageNumber: post_service.DefaultPageNumber})
+	comms, err := r.commentService.GetComments(ctx, model.CommentsFilter{PostID: &obj.ID, PageLimit: tools.DefaultPageLimit, PageNumber: tools.DefaultPageNumber})
 	if err != nil {
 		return nil, err
 	}

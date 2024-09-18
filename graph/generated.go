@@ -13,7 +13,6 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	model1 "github.com/real013228/social-network"
 	"github.com/real013228/social-network/internal/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -55,7 +54,6 @@ type ComplexityRoot struct {
 		Author  func(childComplexity int) int
 		ID      func(childComplexity int) int
 		PostID  func(childComplexity int) int
-		Replies func(childComplexity int) int
 		ReplyTo func(childComplexity int) int
 		Text    func(childComplexity int) int
 	}
@@ -143,7 +141,7 @@ type PostResolver interface {
 }
 type QueryResolver interface {
 	Users(ctx context.Context, filter *model.UsersFilter) (*model.UserPayload, error)
-	Notifications(ctx context.Context, filter *model.UsersFilter) ([]*model1.NotificationPayload, error)
+	Notifications(ctx context.Context, filter *model.UsersFilter) ([]*model.NotificationPayload, error)
 	Comments(ctx context.Context, filter *model.CommentsFilter) (*model.CommentPayload, error)
 	Posts(ctx context.Context, filter *model.PostsFilter) (*model.PostPayload, error)
 }
@@ -190,13 +188,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Comment.PostID(childComplexity), true
-
-	case "Comment.replies":
-		if e.complexity.Comment.Replies == nil {
-			break
-		}
-
-		return e.complexity.Comment.Replies(childComplexity), true
 
 	case "Comment.replyTo":
 		if e.complexity.Comment.ReplyTo == nil {
@@ -572,7 +563,6 @@ var sources = []*ast.Source{
     text: String!
     postID: String!
     author: User!
-    replies: [Comment]
     replyTo: ID
 }
 
@@ -633,6 +623,7 @@ input CreatePostInput {
     title: String!
     description: String!
     authorID: String!
+    commentsAllowed: Boolean!
 }
 
 type CreatePostPayload {
@@ -1247,61 +1238,6 @@ func (ec *executionContext) fieldContext_Comment_author(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Comment_replies(ctx context.Context, field graphql.CollectedField, obj *model.Comment) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Comment_replies(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Replies, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]model.Comment)
-	fc.Result = res
-	return ec.marshalOComment2ᚕgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐComment(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Comment_replies(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Comment",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Comment_id(ctx, field)
-			case "text":
-				return ec.fieldContext_Comment_text(ctx, field)
-			case "postID":
-				return ec.fieldContext_Comment_postID(ctx, field)
-			case "author":
-				return ec.fieldContext_Comment_author(ctx, field)
-			case "replies":
-				return ec.fieldContext_Comment_replies(ctx, field)
-			case "replyTo":
-				return ec.fieldContext_Comment_replyTo(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Comment", field.Name)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Comment_replyTo(ctx context.Context, field graphql.CollectedField, obj *model.Comment) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Comment_replyTo(ctx, field)
 	if err != nil {
@@ -1387,8 +1323,6 @@ func (ec *executionContext) fieldContext_CommentPayload_comments(_ context.Conte
 				return ec.fieldContext_Comment_postID(ctx, field)
 			case "author":
 				return ec.fieldContext_Comment_author(ctx, field)
-			case "replies":
-				return ec.fieldContext_Comment_replies(ctx, field)
 			case "replyTo":
 				return ec.fieldContext_Comment_replyTo(ctx, field)
 			}
@@ -1773,7 +1707,7 @@ func (ec *executionContext) fieldContext_Mutation_subscribe(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _NotificationPayload_text(ctx context.Context, field graphql.CollectedField, obj *model1.NotificationPayload) (ret graphql.Marshaler) {
+func (ec *executionContext) _NotificationPayload_text(ctx context.Context, field graphql.CollectedField, obj *model.NotificationPayload) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_NotificationPayload_text(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1817,7 +1751,7 @@ func (ec *executionContext) fieldContext_NotificationPayload_text(_ context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _NotificationPayload_postID(ctx context.Context, field graphql.CollectedField, obj *model1.NotificationPayload) (ret graphql.Marshaler) {
+func (ec *executionContext) _NotificationPayload_postID(ctx context.Context, field graphql.CollectedField, obj *model.NotificationPayload) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_NotificationPayload_postID(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -1861,7 +1795,7 @@ func (ec *executionContext) fieldContext_NotificationPayload_postID(_ context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _NotificationPayload_commentAuthorID(ctx context.Context, field graphql.CollectedField, obj *model1.NotificationPayload) (ret graphql.Marshaler) {
+func (ec *executionContext) _NotificationPayload_commentAuthorID(ctx context.Context, field graphql.CollectedField, obj *model.NotificationPayload) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_NotificationPayload_commentAuthorID(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -2084,8 +2018,6 @@ func (ec *executionContext) fieldContext_Post_comments(_ context.Context, field 
 				return ec.fieldContext_Comment_postID(ctx, field)
 			case "author":
 				return ec.fieldContext_Comment_author(ctx, field)
-			case "replies":
-				return ec.fieldContext_Comment_replies(ctx, field)
 			case "replyTo":
 				return ec.fieldContext_Comment_replyTo(ctx, field)
 			}
@@ -2317,9 +2249,9 @@ func (ec *executionContext) _Query_notifications(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model1.NotificationPayload)
+	res := resTmp.([]*model.NotificationPayload)
 	fc.Result = res
-	return ec.marshalONotificationPayload2ᚕᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚐNotificationPayload(ctx, field.Selections, res)
+	return ec.marshalONotificationPayload2ᚕᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐNotificationPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_notifications(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4790,7 +4722,7 @@ func (ec *executionContext) unmarshalInputCreatePostInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "description", "authorID"}
+	fieldsInOrder := [...]string{"title", "description", "authorID", "commentsAllowed"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4818,6 +4750,13 @@ func (ec *executionContext) unmarshalInputCreatePostInput(ctx context.Context, o
 				return it, err
 			}
 			it.AuthorID = data
+		case "commentsAllowed":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("commentsAllowed"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CommentsAllowed = data
 		}
 	}
 
@@ -5107,28 +5046,6 @@ func (ec *executionContext) _Comment(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "replies":
-			field := field
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return ec._Comment_replies(ctx, field, obj)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-			out.Values[i] = ec._Comment_replies(ctx, field, obj)
 		case "replyTo":
 			field := field
 
@@ -5478,7 +5395,7 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 var notificationPayloadImplementors = []string{"NotificationPayload"}
 
-func (ec *executionContext) _NotificationPayload(ctx context.Context, sel ast.SelectionSet, obj *model1.NotificationPayload) graphql.Marshaler {
+func (ec *executionContext) _NotificationPayload(ctx context.Context, sel ast.SelectionSet, obj *model.NotificationPayload) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, notificationPayloadImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -7673,51 +7590,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOComment2githubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐComment(ctx context.Context, sel ast.SelectionSet, v model.Comment) graphql.Marshaler {
-	return ec._Comment(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOComment2ᚕgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐComment(ctx context.Context, sel ast.SelectionSet, v []model.Comment) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := true
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOComment2githubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐComment(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
 func (ec *executionContext) marshalOComment2ᚕᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐComment(ctx context.Context, sel ast.SelectionSet, v []*model.Comment) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -7821,7 +7693,7 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalONotificationPayload2ᚕᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚐNotificationPayload(ctx context.Context, sel ast.SelectionSet, v []*model1.NotificationPayload) graphql.Marshaler {
+func (ec *executionContext) marshalONotificationPayload2ᚕᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐNotificationPayload(ctx context.Context, sel ast.SelectionSet, v []*model.NotificationPayload) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -7848,7 +7720,7 @@ func (ec *executionContext) marshalONotificationPayload2ᚕᚖgithubᚗcomᚋrea
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalONotificationPayload2ᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚐNotificationPayload(ctx, sel, v[i])
+			ret[i] = ec.marshalONotificationPayload2ᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐNotificationPayload(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -7862,7 +7734,7 @@ func (ec *executionContext) marshalONotificationPayload2ᚕᚖgithubᚗcomᚋrea
 	return ret
 }
 
-func (ec *executionContext) marshalONotificationPayload2ᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚐNotificationPayload(ctx context.Context, sel ast.SelectionSet, v *model1.NotificationPayload) graphql.Marshaler {
+func (ec *executionContext) marshalONotificationPayload2ᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐNotificationPayload(ctx context.Context, sel ast.SelectionSet, v *model.NotificationPayload) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

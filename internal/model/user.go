@@ -34,6 +34,7 @@ type UsersFilter struct {
 }
 
 type NotificationPayload struct {
+	ID              string `json:"id"`
 	Text            string `json:"text"`
 	PostID          string `json:"postID"`
 	CommentAuthorID string `json:"commentAuthorID"`
