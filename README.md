@@ -77,51 +77,49 @@ Before running this project, ensure you have the following installed:
 ### Example GraphQL Queries
 
 - **Fetch all posts:**
-
   ```graphql
   query posts($filter :PostsFilter) {
-  posts(filter: $filter) {
-    posts {
-      id
-      title
-      description
-      authorID
-    }
-  }
-}
-  ```
-
-- **Fetch a post with comments:**
-
-  ```graphql
-  query posts($filter :PostsFilter) {
-  posts(filter: $filter) {
-    posts {
-      id
-      title
-      description
-      comments {
+    posts(filter: $filter) {
+      posts {
         id
-        text
+        title
+        description
+        authorID
       }
-      authorID
     }
   }
-}
+  ```
+  
+- **Fetch all posts with comments within it:**
+  ```graphql
+  query posts($filter :PostsFilter) {
+    posts(filter: $filter) {
+      posts {
+        id
+        title
+        description
+        comments {
+          id
+          text
+        }
+        authorID
+      }
+    }
+  }
   ```
 
-- **Add a new post:**
 
+- **Add a new post:**  
   ```graphql
- mutation CreatePost($input: CreatePostInput!) {
-  createPost(input: $input) {
-    post {
-      id
-      title
-      description
-      authorID
+   mutation CreatePost($input: CreatePostInput!) {
+      createPost(input: $input) {
+        post {
+          id
+          title
+          description
+          authorID
+        }
+      }
     }
-  }
-}
   ```
 for more details, explore the graphql documentation, that application provides
