@@ -56,8 +56,7 @@ Before running this project, ensure you have the following installed:
 
    ```bash
    docker run -p 8080:8080 \
-   -e DB_OPTION=inmemory
-   social-network-api
+   -e DB_OPTION=inmemory social-network-api
    ```
 
    To use PostgreSQL, pass the following environment variables:
@@ -71,8 +70,12 @@ Before running this project, ensure you have the following installed:
    -e POSTGRES_DBNAME=<POSTGRES_DBNAME> \
    social-network-api
    ```
-
-4. Access the GraphQL Playground at `http://localhost:8080/playground` to explore the API.
+   Or just use already set database in render.com for playground, use .env file:
+   ```bash
+   docker run -p 8080:8080 social-network-api
+   ```
+   
+5. Access the GraphQL Playground at `http://localhost:8080/playground` to explore the API.
 
 ### Example GraphQL Queries
 
