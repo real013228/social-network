@@ -20,6 +20,12 @@ import (
 )
 
 // add comment
+// todo fix && define storages logic
+// todo unit tests
+// todo test my code with integration test(by clicking UI)
+// todo somehow make docker-image of service
+// todo cool readme
+// dl thursday
 const defaultPort = "8080"
 
 func initializePostgreSQLServer(cfg storages.StorageConfig) *handler.Server {
@@ -30,9 +36,9 @@ func initializePostgreSQLServer(cfg storages.StorageConfig) *handler.Server {
 	userStoragePostgres := user_storage.NewUserStoragePostgres(postgreSQLClient)
 	userService := user_service.NewUserService(userStoragePostgres)
 	postStoragePostgres := post_storage.NewPostStoragePostgres(postgreSQLClient, *userStoragePostgres)
-	postService := post_service.NewPostService(postStoragePostgres, *userStoragePostgres)
 	commentStoragePostgres := comment_storage.NewCommentStoragePostgres(postgreSQLClient)
-	commentService := comment_service.NewCommentService(commentStoragePostgres, userStoragePostgres, postStoragePostgres)
+	postService := post_service.NewPostService(postStoragePostgres, userStoragePostgres, userService, commentStoragePostgres)
+	commentService := comment_service.NewCommentService(commentStoragePostgres, userStoragePostgres, postStoragePostgres, postService)
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolvers.NewResolver(
 		userService,
 		postService,
@@ -40,6 +46,22 @@ func initializePostgreSQLServer(cfg storages.StorageConfig) *handler.Server {
 	),
 	}))
 
+	return srv
+}
+
+func initializeInMemoryServer(cfg storages.StorageConfig) *handler.Server {
+	userStorageInMemory := user_storage.NewUserStorageInMemory()
+	postStorageInMemory := post_storage.NewPostStorageInMemory(userStorageInMemory)
+	commentStorageInMemory := comment_storage.NewCommentStorageInMemory()
+	userService := user_service.NewUserService(userStorageInMemory)
+	postService := post_service.NewPostService(postStorageInMemory, userStorageInMemory, userService, commentStorageInMemory)
+	commentService := comment_service.NewCommentService(commentStorageInMemory, userStorageInMemory, postStorageInMemory, postService)
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolvers.NewResolver(
+		userService,
+		postService,
+		commentService,
+	),
+	}))
 	return srv
 }
 

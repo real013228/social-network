@@ -21,18 +21,21 @@ func NewResolver(userService userService, postService postService, commentServic
 
 type userService interface {
 	CreateUser(ctx context.Context, user model.CreateUserInput) (string, error)
-	GetUsers(ctx context.Context) ([]model.User, error)
+	GetUsers(ctx context.Context, filter model.UsersFilter) ([]model.User, error)
 	GetUserByID(ctx context.Context, filter model.UsersFilter) (model.User, error)
+	GetNotifications(ctx context.Context, filter model.UsersFilter) ([]model.NotificationPayload, error)
 }
 
 type postService interface {
 	CreatePost(ctx context.Context, post model.CreatePostInput) (string, error)
-	GetPosts(ctx context.Context) ([]model.Post, error)
+	GetPosts(ctx context.Context, filter model.PostsFilter) ([]model.Post, error)
 	GetPostsByFilter(ctx context.Context, filter model.PostsFilter) ([]model.Post, error)
+	Subscribe(ctx context.Context, subscribeInput model.SubscribeInput) (model.SubscribePayload, error)
 }
 
 type commentService interface {
 	CreateComment(ctx context.Context, comment model.CreateCommentInput) (string, error)
-	GetCommentsByPostID(ctx context.Context, postID string) ([]model.Comment, error)
+	GetReplies(ctx context.Context, commentID string) ([]model.Comment, error)
+	GetComments(ctx context.Context, filter model.CommentsFilter) ([]model.Comment, error)
 	GetCommentsByAuthorID(ctx context.Context, authorID string) ([]model.Comment, error)
 }

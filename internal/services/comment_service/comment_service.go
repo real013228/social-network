@@ -6,14 +6,25 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/real013228/social-network/internal/model"
+	"github.com/real013228/social-network/internal/storages/comment_storage"
 	"github.com/real013228/social-network/internal/storages/post_storage"
 	"github.com/real013228/social-network/internal/storages/user_storage"
 )
 
+const (
+	maxTextLength = 2000
+)
+
+var (
+	ErrTextIsTooLarge = fmt.Errorf("text is too large, %d", maxTextLength)
+)
+
 type commentStorage interface {
 	CreateComment(ctx context.Context, input model.Comment) (string, error)
-	GetCommentsByPostID(ctx context.Context, postID string) ([]model.Comment, error)
+	GetCommentsByPostID(ctx context.Context, filter model.CommentsFilter) ([]model.Comment, error)
 	GetCommentsByUserID(ctx context.Context, userID string) ([]model.Comment, error)
+	GetCommentByID(ctx context.Context, commentID string) (model.Comment, error)
+	GetReplies(ctx context.Context, commentID string) ([]model.Comment, error)
 }
 
 type authorStorage interface {
@@ -24,13 +35,38 @@ type postStorage interface {
 	GetPostByID(ctx context.Context, postID string) (model.Post, error)
 }
 
+type postService interface {
+	NotifyAll(ctx context.Context, payload model.NotificationPayload)
+}
+
 type CommentService struct {
 	storage       commentStorage
 	authorStorage authorStorage
 	postStorage   postStorage
+	postService   postService
 }
 
-func (c CommentService) CreateComment(ctx context.Context, comment model.CreateCommentInput) (string, error) {
+func (c *CommentService) GetReplies(ctx context.Context, commentID string) ([]model.Comment, error) {
+	_, err := c.storage.GetCommentByID(ctx, commentID)
+	if err != nil {
+		if !errors.Is(err, comment_storage.ErrCommentNotFound) {
+			return nil, fmt.Errorf("GetCommentByID: %w", err)
+		}
+		return nil, comment_storage.ErrCommentNotFound
+	}
+
+	replies, err := c.storage.GetReplies(ctx, commentID)
+	if err != nil {
+		return nil, fmt.Errorf("GetReplies: %w", err)
+	}
+
+	return replies, nil
+}
+
+func (c *CommentService) CreateComment(ctx context.Context, comment model.CreateCommentInput) (string, error) {
+	if len(comment.Text) > maxTextLength {
+		return "", ErrTextIsTooLarge
+	}
 	newID := uuid.New()
 	authorID := comment.AuthorID
 	_, err := c.authorStorage.GetUserByID(ctx, model.UsersFilter{UserID: &authorID})
@@ -42,12 +78,15 @@ func (c CommentService) CreateComment(ctx context.Context, comment model.CreateC
 	}
 
 	postID := comment.PostID
-	_, err = c.postStorage.GetPostByID(ctx, postID)
+	pst, err := c.postStorage.GetPostByID(ctx, postID)
 	if err != nil {
 		if !errors.Is(err, post_storage.ErrPostNotFound) {
 			return "", fmt.Errorf("post_storage.GetPostByID: %w", err)
 		}
 		return "", post_storage.ErrPostNotFound
+	}
+	if !pst.CommentsAllowed {
+		return "", fmt.Errorf("comments are not allowed in post: %s", pst.ID)
 	}
 	var comm = model.Comment{
 		ID:       newID.String(),
@@ -55,30 +94,40 @@ func (c CommentService) CreateComment(ctx context.Context, comment model.CreateC
 		Text:     comment.Text,
 		AuthorID: comment.AuthorID,
 	}
+
+	comm.ReplyTo = &comment.ReplyTo
 	id, err := c.storage.CreateComment(ctx, comm)
 	if err != nil {
 		return "", fmt.Errorf("comment_storage.CreateComment: %w", err)
 	}
+	var notificationPayload model.NotificationPayload
+	notificationPayload.CommentAuthorID = comment.AuthorID
+	notificationPayload.Text = comment.Text
+	notificationPayload.PostID = postID
+	c.postService.NotifyAll(ctx, notificationPayload)
 
 	return id, nil
 }
 
-func (c CommentService) GetCommentsByPostID(ctx context.Context, postID string) ([]model.Comment, error) {
-	if _, err := c.postStorage.GetPostByID(ctx, postID); err != nil {
+func (c *CommentService) GetComments(ctx context.Context, filter model.CommentsFilter) ([]model.Comment, error) {
+	if _, err := c.postStorage.GetPostByID(ctx, *filter.PostID); err != nil {
 		if !errors.Is(err, post_storage.ErrPostNotFound) {
 			return nil, fmt.Errorf("post_storage.GetPostByID: %w", err)
 		}
 		return nil, post_storage.ErrPostNotFound
 	}
 
-	comms, err := c.storage.GetCommentsByPostID(ctx, postID)
+	comms, err := c.storage.GetCommentsByPostID(ctx, filter)
 	if err != nil {
 		return nil, err
+	}
+	if comms == nil {
+		comms = []model.Comment{}
 	}
 	return comms, nil
 }
 
-func (c CommentService) GetCommentsByAuthorID(ctx context.Context, authorID string) ([]model.Comment, error) {
+func (c *CommentService) GetCommentsByAuthorID(ctx context.Context, authorID string) ([]model.Comment, error) {
 	if _, err := c.authorStorage.GetUserByID(ctx, model.UsersFilter{UserID: &authorID}); err != nil {
 		if !errors.Is(err, user_storage.ErrUserNotFound) {
 			return nil, fmt.Errorf("user_storage.GetUserByID: %w", err)
@@ -92,6 +141,6 @@ func (c CommentService) GetCommentsByAuthorID(ctx context.Context, authorID stri
 	return comms, nil
 }
 
-func NewCommentService(storage commentStorage, authorStorage authorStorage, postStorage postStorage) *CommentService {
-	return &CommentService{storage: storage, authorStorage: authorStorage, postStorage: postStorage}
+func NewCommentService(storage commentStorage, authorStorage authorStorage, postStorage postStorage, postService postService) *CommentService {
+	return &CommentService{storage: storage, authorStorage: authorStorage, postStorage: postStorage, postService: postService}
 }

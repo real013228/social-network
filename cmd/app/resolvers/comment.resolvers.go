@@ -21,6 +21,23 @@ func (r *commentResolver) Author(ctx context.Context, obj *model.Comment) (*mode
 	return &author, nil
 }
 
+// Replies is the resolver for the replies field.
+func (r *commentResolver) Replies(ctx context.Context, obj *model.Comment) (*model.Replies, error) {
+	comms, err := r.commentService.GetReplies(ctx, obj.ID)
+	if err != nil {
+		return nil, err
+	}
+	var res []*model.Comment
+
+	for _, comm := range comms {
+		comm := comm
+		res = append(res, &comm)
+	}
+	var reply model.Replies
+	reply.Comments = res
+	return &reply, nil
+}
+
 // CreateComment is the resolver for the createComment field.
 func (r *mutationResolver) CreateComment(ctx context.Context, input model.CreateCommentInput) (*model.CreateCommentPayload, error) {
 	id, err := r.commentService.CreateComment(ctx, input)
@@ -34,7 +51,7 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.Create
 
 // Comments is the resolver for the comments field.
 func (r *queryResolver) Comments(ctx context.Context, filter *model.CommentsFilter) (*model.CommentPayload, error) {
-	comms, err := r.commentService.GetCommentsByAuthorID(ctx, *filter.AuthorID)
+	comms, err := r.commentService.GetComments(ctx, *filter)
 	if err != nil {
 		return nil, err
 	}
@@ -54,19 +71,3 @@ func (r *queryResolver) Comments(ctx context.Context, filter *model.CommentsFilt
 func (r *Resolver) Comment() graph.CommentResolver { return &commentResolver{r} }
 
 type commentResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *createCommentPayloadResolver) CommentID(ctx context.Context, obj *model.CreateCommentPayload) (string, error) {
-	panic(fmt.Errorf("not implemented: CommentID - commentID"))
-}
-func (r *Resolver) CreateCommentPayload() graph.CreateCommentPayloadResolver {
-	return &createCommentPayloadResolver{r}
-}
-type createCommentPayloadResolver struct{ *Resolver }
-*/

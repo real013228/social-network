@@ -6,7 +6,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/real013228/social-network/graph"
 	"github.com/real013228/social-network/internal/model"
@@ -31,28 +30,45 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context, filter *model.UsersFilter) (*model.UserPayload, error) {
 	var payload = &model.UserPayload{}
-	if filter != nil {
-		user, err := r.userService.GetUserByID(ctx, *filter)
-		if err != nil {
-			return nil, err
-		}
+
+	users, err := r.userService.GetUsers(ctx, *filter)
+	if err != nil {
+		return nil, err
+	}
+	for _, user := range users {
+		user := user
 		payload.Users = append(payload.Users, &user)
-	} else {
-		users, err := r.userService.GetUsers(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, user := range users {
-			user := user
-			payload.Users = append(payload.Users, &user)
-		}
 	}
 	return payload, nil
 }
 
+// Notifications is the resolver for the notifications field.
+func (r *queryResolver) Notifications(ctx context.Context, filter *model.UsersFilter) ([]*model.NotificationPayload, error) {
+	notifications, err := r.userService.GetNotifications(ctx, *filter)
+	if err != nil {
+		return nil, err
+	}
+	var res = make([]*model.NotificationPayload, 0, len(notifications))
+	for _, notification := range notifications {
+		notification := notification
+		res = append(res, &notification)
+	}
+	return res, nil
+}
+
 // Posts is the resolver for the posts field.
 func (r *userResolver) Posts(ctx context.Context, obj *model.User) ([]*model.Post, error) {
-	panic(fmt.Errorf("not implemented: Posts - posts"))
+	filter := model.PostsFilter{AuthorID: &obj.ID}
+	posts, err := r.postService.GetPostsByFilter(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	var res = make([]*model.Post, 0, len(posts))
+	for _, post := range posts {
+		post := post
+		res = append(res, &post)
+	}
+	return res, nil
 }
 
 // CreateUserPayload returns graph.CreateUserPayloadResolver implementation.

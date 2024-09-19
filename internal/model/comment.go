@@ -1,10 +1,12 @@
 package model
 
 type Comment struct {
-	ID       string `json:"id"`
-	Text     string `json:"text"`
-	PostID   string `json:"postID"`
-	AuthorID string `json:"authorID"`
+	ID       string  `json:"id"`
+	Text     string  `json:"text"`
+	PostID   string  `json:"postID"`
+	AuthorID string  `json:"authorID"`
+	ReplyTo  *string `json:"replyTo,omitempty"`
+	Replies  Replies `json:"replies,omitempty"`
 }
 
 type CommentPayload struct {
@@ -12,15 +14,22 @@ type CommentPayload struct {
 }
 
 type CommentsFilter struct {
-	AuthorID *string `json:"authorID,omitempty"`
+	PostID     *string `json:"authorID,omitempty"`
+	PageLimit  int     `json:"pageLimit"`
+	PageNumber int     `json:"pageNumber"`
 }
 
 type CreateCommentInput struct {
 	Text     string `json:"text"`
 	PostID   string `json:"postID"`
 	AuthorID string `json:"authorID"`
+	ReplyTo  string `json:"replyTo,omitempty"`
 }
 
 type CreateCommentPayload struct {
 	CommentID string `json:"comment"`
+}
+
+type Replies struct {
+	Comments []*Comment `json:"comments,omitempty"`
 }

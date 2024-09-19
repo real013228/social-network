@@ -3,6 +3,12 @@ type Comment {
     text: String!
     postID: String!
     author: User!
+    replyTo: ID
+    replies: Replies
+}
+
+type Replies {
+    comments: [Comment]
 }
 
 type CommentPayload {
@@ -10,7 +16,9 @@ type CommentPayload {
 }
 
 input CommentsFilter {
-    authorID: ID
+    postID: ID
+    pageLimit: Int!
+    pageNumber: Int!
 }
 
 extend type Query {
@@ -21,6 +29,7 @@ input CreateCommentInput {
     text: String!
     postID: String!
     authorID: String!
+    replyTo: ID
 }
 
 type CreateCommentPayload {

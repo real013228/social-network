@@ -28,4 +28,16 @@ type PostsFilter struct {
 	PostID       *string `json:"postID,omitempty"`
 	AuthorID     *string `json:"authorID,omitempty"`
 	WithComments *bool   `json:"withComments,omitempty"`
+	PageLimit    int     `json:"pageLimit"`
+	PageNumber   int     `json:"pageNumber"`
+}
+
+type SubscribeInput struct {
+	PostID string `json:"postID"`
+	UserID string `json:"userID"`
+}
+
+type SubscribePayload struct {
+	Success bool    `json:"success"`
+	Message *string `json:"message,omitempty"`
 }
