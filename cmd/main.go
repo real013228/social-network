@@ -19,11 +19,10 @@ import (
 	"os"
 )
 
-// todo test my code with integration test(by clicking UI)
-// todo somehow make docker-image of service
-// todo cool readme
-// dl thursday
-const defaultPort = "8080"
+const (
+	defaultPort          = "8080"
+	defaultRetryAttempts = 3
+)
 
 func initializePostgreSQLServer(cfg storages.StorageConfig) *handler.Server {
 	postgreSQLClient, err := storages.NewClient(context.TODO(), cfg)
@@ -83,7 +82,7 @@ func main() {
 			Username:      os.Getenv("POSTGRES_USER"),
 			Password:      os.Getenv("POSTGRES_PASSWORD"),
 			DBName:        os.Getenv("POSTGRES_DBNAME"),
-			RetryAttempts: 3,
+			RetryAttempts: defaultRetryAttempts,
 		}
 		srv = initializePostgreSQLServer(cfg)
 
