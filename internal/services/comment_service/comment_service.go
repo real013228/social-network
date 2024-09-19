@@ -95,6 +95,14 @@ func (c *CommentService) CreateComment(ctx context.Context, comment model.Create
 		AuthorID: comment.AuthorID,
 	}
 
+	_, err = c.storage.GetCommentByID(ctx, comment.ReplyTo)
+	if err != nil {
+		if !errors.Is(err, comment_storage.ErrCommentNotFound) {
+			return "", fmt.Errorf("comment_storage.GetCommentByID: %w", err)
+		}
+		return "", comment_storage.ErrCommentNotFound
+	}
+
 	comm.ReplyTo = &comment.ReplyTo
 	id, err := c.storage.CreateComment(ctx, comm)
 	if err != nil {
