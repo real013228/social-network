@@ -56,7 +56,7 @@ func (s *CommentStoragePostgres) GetReplies(ctx context.Context, commentID strin
 func (s *CommentStoragePostgres) CreateComment(ctx context.Context, input model.Comment) (string, error) {
 	var q string
 	var id string
-	if input.ReplyTo == "" {
+	if *input.ReplyTo == "" {
 		q = `
 		INSERT INTO comments (id, text, post_id, author_id)
 		VALUES ($1, $2, $3, $4)

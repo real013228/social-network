@@ -4,6 +4,11 @@ type Comment {
     postID: String!
     author: User!
     replyTo: ID
+    replies: Replies
+}
+
+type Replies {
+    comments: [Comment]
 }
 
 type CommentPayload {

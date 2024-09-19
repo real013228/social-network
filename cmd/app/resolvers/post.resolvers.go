@@ -64,9 +64,9 @@ func (r *queryResolver) Posts(ctx context.Context, filter *model.PostsFilter) (*
 		post := post
 		res = append(res, &post)
 	}
-	var payload *model.PostPayload
+	var payload model.PostPayload
 	payload.Posts = res
-	return payload, nil
+	return &payload, nil
 }
 
 // Post returns graph.PostResolver implementation.

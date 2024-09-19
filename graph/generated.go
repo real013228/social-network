@@ -54,6 +54,7 @@ type ComplexityRoot struct {
 		Author  func(childComplexity int) int
 		ID      func(childComplexity int) int
 		PostID  func(childComplexity int) int
+		Replies func(childComplexity int) int
 		ReplyTo func(childComplexity int) int
 		Text    func(childComplexity int) int
 	}
@@ -107,6 +108,10 @@ type ComplexityRoot struct {
 		Users         func(childComplexity int, filter *model.UsersFilter) int
 	}
 
+	Replies struct {
+		Comments func(childComplexity int) int
+	}
+
 	SubscribePayload struct {
 		Message func(childComplexity int) int
 		Success func(childComplexity int) int
@@ -126,6 +131,8 @@ type ComplexityRoot struct {
 
 type CommentResolver interface {
 	Author(ctx context.Context, obj *model.Comment) (*model.User, error)
+
+	Replies(ctx context.Context, obj *model.Comment) (*model.Replies, error)
 }
 type CreateUserPayloadResolver interface {
 	UserID(ctx context.Context, obj *model.CreateUserPayload) (string, error)
@@ -188,6 +195,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Comment.PostID(childComplexity), true
+
+	case "Comment.replies":
+		if e.complexity.Comment.Replies == nil {
+			break
+		}
+
+		return e.complexity.Comment.Replies(childComplexity), true
 
 	case "Comment.replyTo":
 		if e.complexity.Comment.ReplyTo == nil {
@@ -397,6 +411,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Users(childComplexity, args["filter"].(*model.UsersFilter)), true
 
+	case "Replies.comments":
+		if e.complexity.Replies.Comments == nil {
+			break
+		}
+
+		return e.complexity.Replies.Comments(childComplexity), true
+
 	case "SubscribePayload.message":
 		if e.complexity.SubscribePayload.Message == nil {
 			break
@@ -564,6 +585,11 @@ var sources = []*ast.Source{
     postID: String!
     author: User!
     replyTo: ID
+    replies: Replies
+}
+
+type Replies {
+    comments: [Comment]
 }
 
 type CommentPayload {
@@ -1261,9 +1287,9 @@ func (ec *executionContext) _Comment_replyTo(ctx context.Context, field graphql.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOID2string(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Comment_replyTo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1274,6 +1300,51 @@ func (ec *executionContext) fieldContext_Comment_replyTo(_ context.Context, fiel
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Comment_replies(ctx context.Context, field graphql.CollectedField, obj *model.Comment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Comment_replies(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Comment().Replies(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Replies)
+	fc.Result = res
+	return ec.marshalOReplies2ᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐReplies(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Comment_replies(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Comment",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "comments":
+				return ec.fieldContext_Replies_comments(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Replies", field.Name)
 		},
 	}
 	return fc, nil
@@ -1325,6 +1396,8 @@ func (ec *executionContext) fieldContext_CommentPayload_comments(_ context.Conte
 				return ec.fieldContext_Comment_author(ctx, field)
 			case "replyTo":
 				return ec.fieldContext_Comment_replyTo(ctx, field)
+			case "replies":
+				return ec.fieldContext_Comment_replies(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Comment", field.Name)
 		},
@@ -2020,6 +2093,8 @@ func (ec *executionContext) fieldContext_Post_comments(_ context.Context, field 
 				return ec.fieldContext_Comment_author(ctx, field)
 			case "replyTo":
 				return ec.fieldContext_Comment_replyTo(ctx, field)
+			case "replies":
+				return ec.fieldContext_Comment_replies(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Comment", field.Name)
 		},
@@ -2522,6 +2597,61 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Replies_comments(ctx context.Context, field graphql.CollectedField, obj *model.Replies) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Replies_comments(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Comments, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Comment)
+	fc.Result = res
+	return ec.marshalOComment2ᚕᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐComment(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Replies_comments(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Replies",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Comment_id(ctx, field)
+			case "text":
+				return ec.fieldContext_Comment_text(ctx, field)
+			case "postID":
+				return ec.fieldContext_Comment_postID(ctx, field)
+			case "author":
+				return ec.fieldContext_Comment_author(ctx, field)
+			case "replyTo":
+				return ec.fieldContext_Comment_replyTo(ctx, field)
+			case "replies":
+				return ec.fieldContext_Comment_replies(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Comment", field.Name)
 		},
 	}
 	return fc, nil
@@ -5068,6 +5198,28 @@ func (ec *executionContext) _Comment(ctx context.Context, sel ast.SelectionSet, 
 				continue
 			}
 			out.Values[i] = ec._Comment_replyTo(ctx, field, obj)
+		case "replies":
+			field := field
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return ec._Comment_replies(ctx, field, obj)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+			out.Values[i] = ec._Comment_replies(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5797,6 +5949,62 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var repliesImplementors = []string{"Replies"}
+
+func (ec *executionContext) _Replies(ctx context.Context, sel ast.SelectionSet, obj *model.Replies) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, repliesImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Replies")
+		case "comments":
+			field := field
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return ec._Replies_comments(ctx, field, obj)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+			out.Values[i] = ec._Replies_comments(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7802,6 +8010,13 @@ func (ec *executionContext) unmarshalOPostsFilter2ᚖgithubᚗcomᚋreal013228�
 	}
 	res, err := ec.unmarshalInputPostsFilter(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOReplies2ᚖgithubᚗcomᚋreal013228ᚋsocialᚑnetworkᚋinternalᚋmodelᚐReplies(ctx context.Context, sel ast.SelectionSet, v *model.Replies) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Replies(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

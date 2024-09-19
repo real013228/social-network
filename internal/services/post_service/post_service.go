@@ -9,6 +9,7 @@ import (
 	"github.com/real013228/social-network/internal/storages/post_storage"
 	"github.com/real013228/social-network/internal/storages/user_storage"
 	"strings"
+	"sync"
 )
 
 var (
@@ -97,7 +98,7 @@ func (s *PostService) CreatePost(ctx context.Context, post model.CreatePostInput
 }
 
 func (s *PostService) GetPosts(ctx context.Context, filter model.PostsFilter) ([]model.Post, error) {
-	posts, err := s.GetPosts(ctx, filter)
+	posts, err := s.storage.GetPosts(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -159,8 +160,14 @@ func (s *PostService) GetPostsByFilter(ctx context.Context, filter model.PostsFi
 func (s *PostService) NotifyAll(ctx context.Context, payload model.NotificationPayload) {
 	subscribers, err := s.storage.GetSubscribers(ctx, payload.PostID)
 	if err == nil {
+		var wg sync.WaitGroup
+		wg.Add(len(subscribers))
 		for _, sub := range subscribers {
-			s.userService.Notify(ctx, sub.ID, payload)
+			go func(ctx context.Context, subID string, payload model.NotificationPayload) {
+				s.userService.Notify(ctx, subID, payload)
+				wg.Done()
+			}(ctx, sub.ID, payload)
 		}
+		wg.Wait()
 	}
 }

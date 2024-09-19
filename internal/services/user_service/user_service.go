@@ -82,7 +82,8 @@ func (s *UserService) GetUserByID(ctx context.Context, filter model.UsersFilter)
 }
 
 func (s *UserService) Notify(ctx context.Context, userID string, payload model.NotificationPayload) {
-
+	newID := uuid.New()
+	payload.ID = newID.String()
 	s.storage.Notify(ctx, userID, payload)
 }
 

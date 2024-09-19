@@ -32,7 +32,7 @@ func (c *CommentStorageInMemory) GetReplies(ctx context.Context, commentID strin
 	var comments []model.Comment
 	for _, comment := range c.comments {
 		comment := comment
-		if comment.ReplyTo == commentID {
+		if *comment.ReplyTo == commentID {
 			comments = append(comments, comment)
 		}
 	}
@@ -46,7 +46,7 @@ func (c *CommentStorageInMemory) CreateComment(ctx context.Context, input model.
 	input.ID = strconv.Itoa(c.cnt)
 	c.cnt = c.cnt + 1
 	c.comments = append(c.comments, input)
-	replyToInd, err := strconv.Atoi(input.ReplyTo)
+	replyToInd, err := strconv.Atoi(*input.ReplyTo)
 	if err != nil || replyToInd < 0 || replyToInd >= len(c.comments) {
 		return "", err
 	}

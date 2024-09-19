@@ -95,7 +95,7 @@ func (c *CommentService) CreateComment(ctx context.Context, comment model.Create
 		AuthorID: comment.AuthorID,
 	}
 
-	comm.ReplyTo = comment.ReplyTo
+	comm.ReplyTo = &comment.ReplyTo
 	id, err := c.storage.CreateComment(ctx, comm)
 	if err != nil {
 		return "", fmt.Errorf("comment_storage.CreateComment: %w", err)
@@ -121,7 +121,9 @@ func (c *CommentService) GetComments(ctx context.Context, filter model.CommentsF
 	if err != nil {
 		return nil, err
 	}
-
+	if comms == nil {
+		comms = []model.Comment{}
+	}
 	return comms, nil
 }
 

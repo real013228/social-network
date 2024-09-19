@@ -100,3 +100,5 @@ models:
     fields:
       post:
         resolver: true
+      replies:
+        resolver: true

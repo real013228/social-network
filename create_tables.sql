@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS user_posts;
-DROP TABLE IF EXISTS post_comments;
 DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS subscriptions;
 DROP TABLE IF EXISTS comments;
@@ -27,18 +25,6 @@ CREATE TABLE comments (
                           reply_to UUID REFERENCES comments(id) ON DELETE SET NULL
 );
 
-CREATE TABLE user_posts (
-                            user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-                            post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
-                            PRIMARY KEY (user_id, post_id)
-);
-
-CREATE TABLE post_comments (
-                               post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
-                               comment_id UUID REFERENCES comments(id) ON DELETE CASCADE,
-                               PRIMARY KEY (post_id, comment_id)
-);
-
 CREATE TABLE subscriptions (
                            user_id UUID REFERENCES users(id) ON DELETE CASCADE,
                            post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
@@ -49,6 +35,6 @@ CREATE TABLE notifications (
                                id UUID PRIMARY KEY,
                                receiver_id UUID REFERENCES users(id) ON DELETE CASCADE,
                                text VARCHAR(255) NOT NULL,
-                               post_id INT NOT NULL REFERENCES posts(id),
-                               comment_author_id INT NOT NULL REFERENCES users(id)
+                               post_id UUID NOT NULL REFERENCES posts(id),
+                               comment_author_id UUID NOT NULL REFERENCES users(id)
 );

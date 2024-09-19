@@ -21,6 +21,23 @@ func (r *commentResolver) Author(ctx context.Context, obj *model.Comment) (*mode
 	return &author, nil
 }
 
+// Replies is the resolver for the replies field.
+func (r *commentResolver) Replies(ctx context.Context, obj *model.Comment) (*model.Replies, error) {
+	comms, err := r.commentService.GetReplies(ctx, obj.ID)
+	if err != nil {
+		return nil, err
+	}
+	var res []*model.Comment
+
+	for _, comm := range comms {
+		comm := comm
+		res = append(res, &comm)
+	}
+	var reply model.Replies
+	reply.Comments = res
+	return &reply, nil
+}
+
 // CreateComment is the resolver for the createComment field.
 func (r *mutationResolver) CreateComment(ctx context.Context, input model.CreateCommentInput) (*model.CreateCommentPayload, error) {
 	id, err := r.commentService.CreateComment(ctx, input)
