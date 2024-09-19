@@ -19,9 +19,6 @@ import (
 	"os"
 )
 
-// add comment
-// todo fix && define storages logic
-// todo unit tests
 // todo test my code with integration test(by clicking UI)
 // todo somehow make docker-image of service
 // todo cool readme
@@ -34,9 +31,9 @@ func initializePostgreSQLServer(cfg storages.StorageConfig) *handler.Server {
 		log.Fatal(err)
 	}
 	userStoragePostgres := user_storage.NewUserStoragePostgres(postgreSQLClient)
-	userService := user_service.NewUserService(userStoragePostgres)
 	postStoragePostgres := post_storage.NewPostStoragePostgres(postgreSQLClient, *userStoragePostgres)
 	commentStoragePostgres := comment_storage.NewCommentStoragePostgres(postgreSQLClient)
+	userService := user_service.NewUserService(userStoragePostgres)
 	postService := post_service.NewPostService(postStoragePostgres, userStoragePostgres, userService, commentStoragePostgres)
 	commentService := comment_service.NewCommentService(commentStoragePostgres, userStoragePostgres, postStoragePostgres, postService)
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolvers.NewResolver(
@@ -49,7 +46,7 @@ func initializePostgreSQLServer(cfg storages.StorageConfig) *handler.Server {
 	return srv
 }
 
-func initializeInMemoryServer(cfg storages.StorageConfig) *handler.Server {
+func initializeInMemoryServer() *handler.Server {
 	userStorageInMemory := user_storage.NewUserStorageInMemory()
 	postStorageInMemory := post_storage.NewPostStorageInMemory(userStorageInMemory)
 	commentStorageInMemory := comment_storage.NewCommentStorageInMemory()
@@ -66,6 +63,7 @@ func initializeInMemoryServer(cfg storages.StorageConfig) *handler.Server {
 }
 
 func main() {
+	var srv *handler.Server
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatalf("Error loading .env file: %s", err)
@@ -74,17 +72,22 @@ func main() {
 	if port == "" {
 		port = defaultPort
 	}
+	db_option := os.Getenv("DB_OPTION")
+	switch db_option {
+	case "inmemory":
+		srv = initializeInMemoryServer()
+	default:
+		cfg := storages.StorageConfig{
+			Host:          os.Getenv("POSTGRES_HOST"),
+			Port:          os.Getenv("POSTGRES_PORT"),
+			Username:      os.Getenv("POSTGRES_USER"),
+			Password:      os.Getenv("POSTGRES_PASSWORD"),
+			DBName:        os.Getenv("POSTGRES_DBNAME"),
+			RetryAttempts: 3,
+		}
+		srv = initializePostgreSQLServer(cfg)
 
-	cfg := storages.StorageConfig{
-		Host:          os.Getenv("POSTGRES_HOST"),
-		Port:          os.Getenv("POSTGRES_PORT"),
-		Username:      os.Getenv("POSTGRES_USER"),
-		Password:      os.Getenv("POSTGRES_PASSWORD"),
-		DBName:        os.Getenv("POSTGRES_DBNAME"),
-		RetryAttempts: 3,
 	}
-
-	srv := initializePostgreSQLServer(cfg)
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)

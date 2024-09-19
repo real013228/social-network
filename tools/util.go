@@ -13,7 +13,7 @@ func Paginate(limit, num, length int) (startIndex, endIndex int, err error) {
 	}
 	startIndex = num * limit
 	if startIndex >= length {
-		return 0, 0, fmt.Errorf("invalid params, limit, num: %d %d", limit, num)
+		startIndex = length
 	}
 	endIndex = startIndex + limit
 	if endIndex > length {

@@ -56,6 +56,15 @@ func (s *PostService) Subscribe(ctx context.Context, subscribeInput model.Subscr
 		}
 		return model.SubscribePayload{}, err
 	}
+	subs, err := s.storage.GetSubscribers(ctx, subscribeInput.PostID)
+	if err != nil {
+		return model.SubscribePayload{}, err
+	}
+	for _, sub := range subs {
+		if sub.ID == subscribeInput.UserID {
+			return model.SubscribePayload{}, fmt.Errorf("user already subscribed to this post, userID: %s, postID: %s", subscribeInput.UserID, subscribeInput.PostID)
+		}
+	}
 	var payload model.SubscribePayload
 	payload.Message = &msg
 	payload.Success = true
