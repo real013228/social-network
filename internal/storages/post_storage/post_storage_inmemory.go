@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/real013228/social-network/internal/model"
 	"github.com/real013228/social-network/tools"
-	"strconv"
 	"sync"
 )
 
@@ -18,29 +17,20 @@ type userStorage interface {
 }
 
 type PostStorageInMemory struct {
-	posts       []model.Post
-	cnt         int
+	posts       map[string]model.Post
 	mu          sync.RWMutex
-	subscribers map[int][]int
+	subscribers map[string][]string
 	userStorage userStorage
 }
 
 func (p *PostStorageInMemory) Subscribe(ctx context.Context, subscribeInput model.SubscribeInput) (string, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	pId, err := strconv.Atoi(subscribeInput.PostID)
-	if err != nil {
-		return "", err
-	}
-	uId, err := strconv.Atoi(subscribeInput.UserID)
-	if err != nil {
-		return "", err
-	}
-	_, ok := p.subscribers[pId]
+	_, ok := p.subscribers[subscribeInput.PostID]
 	if ok {
-		p.subscribers[pId] = append(p.subscribers[pId], uId)
+		p.subscribers[subscribeInput.PostID] = append(p.subscribers[subscribeInput.PostID], subscribeInput.UserID)
 	} else {
-		p.subscribers[pId] = []int{uId}
+		p.subscribers[subscribeInput.PostID] = []string{subscribeInput.UserID}
 	}
 	return "successfully subscribed to post", nil
 }
@@ -48,15 +38,10 @@ func (p *PostStorageInMemory) Subscribe(ctx context.Context, subscribeInput mode
 func (p *PostStorageInMemory) GetSubscribers(ctx context.Context, postID string) ([]model.User, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	pId, err := strconv.Atoi(postID)
-	if err != nil {
-		return nil, err
-	}
 	var res []model.User
-	for _, usr := range p.subscribers[pId] {
-		usrID := strconv.Itoa(usr)
+	for _, usr := range p.subscribers[postID] {
 		usrByID, err := p.userStorage.GetUserByID(ctx, model.UsersFilter{
-			UserID:     &usrID,
+			UserID:     &usr,
 			PageLimit:  tools.DefaultPageLimit,
 			PageNumber: tools.DefaultPageNumber,
 		})
@@ -71,20 +56,27 @@ func (p *PostStorageInMemory) GetSubscribers(ctx context.Context, postID string)
 func (p *PostStorageInMemory) CreatePost(ctx context.Context, post model.Post) (string, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	post.ID = strconv.Itoa(p.cnt)
-	p.cnt = p.cnt + 1
-	p.posts = append(p.posts, post)
+	p.posts[post.ID] = post
 	return post.ID, nil
 }
 
 func (p *PostStorageInMemory) GetPosts(ctx context.Context, filter model.PostsFilter) ([]model.Post, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	startIndex, endIndex, err := tools.Paginate(filter.PageLimit, filter.PageNumber, p.cnt)
+	startIndex, endIndex, err := tools.Paginate(filter.PageLimit, filter.PageNumber, len(p.posts))
 	if err != nil {
 		return nil, err
 	}
-	return p.posts[startIndex:endIndex], nil
+	cnt := 0
+	var results []model.Post
+	for k, _ := range p.posts {
+		if cnt >= endIndex-startIndex+1 {
+			break
+		}
+		results = append(results, p.posts[k])
+		cnt++
+	}
+	return results, nil
 }
 
 func (p *PostStorageInMemory) GetPostsByUserID(ctx context.Context, userID string) ([]model.Post, error) {
@@ -103,20 +95,18 @@ func (p *PostStorageInMemory) GetPostsByUserID(ctx context.Context, userID strin
 func (p *PostStorageInMemory) GetPostByID(ctx context.Context, postID string) (model.Post, error) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
-	for _, post := range p.posts {
-		if post.ID == postID {
-			return post, nil
-		}
+	post, ok := p.posts[postID]
+	if !ok {
+		return model.Post{}, ErrPostNotFound
 	}
-	return model.Post{}, ErrPostNotFound
+	return post, nil
 }
 
 func NewPostStorageInMemory(userStorage userStorage) *PostStorageInMemory {
 	return &PostStorageInMemory{
-		posts:       make([]model.Post, 0),
-		cnt:         0,
+		posts:       make(map[string]model.Post, 0),
 		mu:          sync.RWMutex{},
-		subscribers: make(map[int][]int),
+		subscribers: make(map[string][]string),
 		userStorage: userStorage,
 	}
 }

@@ -16,7 +16,6 @@ var (
 type UserStorageInMemory struct {
 	users         map[string]model.User
 	notifications map[string][]model.NotificationPayload
-	cnt           int
 	mu            sync.RWMutex
 }
 
@@ -47,7 +46,7 @@ func (u *UserStorageInMemory) CreateUser(ctx context.Context, user model.User) (
 func (u *UserStorageInMemory) GetUsers(ctx context.Context, filter model.UsersFilter) ([]model.User, error) {
 	u.mu.RLock()
 	defer u.mu.RUnlock()
-	startIndex, endIndex, err := tools.Paginate(filter.PageLimit, filter.PageNumber, u.cnt)
+	startIndex, endIndex, err := tools.Paginate(filter.PageLimit, filter.PageNumber, len(u.users))
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +86,6 @@ func (u *UserStorageInMemory) GetUserByEmail(ctx context.Context, email string) 
 func NewUserStorageInMemory() *UserStorageInMemory {
 	return &UserStorageInMemory{
 		users:         make(map[string]model.User),
-		cnt:           0,
 		mu:            sync.RWMutex{},
 		notifications: make(map[string][]model.NotificationPayload),
 	}
